@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Definition usePropertiesCache="false" setOnTopOnClick="true">
+ <Import url="[config.mod.template.button]iconButton.xml" />
+ <Import url="[config.mod.template.button]simpleButton.xml" />
+ <Constants>
+  <Constant name="assets" value="[config.ui.skin]assets.swf|" />
+  <Constant name="css" value="[config.ui.skin]css/" />
+ </Constants>
+ <Container name="mainCtr">
+  <Anchors><Anchor point="CENTER" relativePoint="CENTER" /></Anchors>
+  <Size><AbsDimension x="960" y="650" /></Size>
+  <Texture name="tx_background" strata="LOW">
+   <Size><AbsDimension x="960" y="650" /></Size>
+   <autoGrid>true</autoGrid><uri>[local.assets]tx_generalBackgroundWithTitle</uri>
+  </Texture>
+  <Label><Anchors><Anchor><AbsDimension x="24" y="14" /></Anchor></Anchors><Size><AbsDimension x="820" y="36" /></Size><css>[local.css]title.css</css><text>ANOMALIES</text></Label>
+  <iconButton name="btn_close"><Anchors><Anchor relativeTo="tx_background" point="TOPRIGHT" relativePoint="TOPRIGHT" /></Anchors><Size><AbsDimension x="57" y="36" /></Size><uri>[local.assets]btn_cornerCross</uri><Hooks><onRelease /></Hooks></iconButton>
+
+  <Texture><Anchors><Anchor><AbsDimension x="18" y="60" /></Anchor></Anchors><Size><AbsDimension x="285" y="565" /></Size><autoGrid>true</autoGrid><uri>[local.assets]tx_blockBackground</uri></Texture>
+  <Label><Anchors><Anchor><AbsDimension x="34" y="74" /></Anchor></Anchors><Size><AbsDimension x="250" y="28" /></Size><css>[local.css]title.css</css><text>Mes Anomalies</text></Label>
+  <Input name="inp_search"><Anchors><Anchor><AbsDimension x="34" y="112" /></Anchor></Anchors><Size><AbsDimension x="250" y="25" /></Size><css>[local.css]normal.css</css></Input>
+  <Grid name="gd_anomalies"><Anchors><Anchor><AbsDimension x="34" y="153" /></Anchor></Anchors><Size><AbsDimension x="250" y="400" /></Size><rendererName>SlotGridRenderer</rendererName><rendererArgs>,,,,,,[local.css]normal.css,,true</rendererArgs><slotWidth>72</slotWidth><slotHeight>72</slotHeight><scrollDisplay>auto</scrollDisplay><autoSelectMode>1</autoSelectMode><Hooks><onSelectItem /><onItemRollOver /><onItemRollOut /></Hooks></Grid>
+  <Label name="lbl_empty"><Anchors><Anchor><AbsDimension x="50" y="320" /></Anchor></Anchors><Size><AbsDimension x="220" y="25" /></Size><css>[local.css]normal.css</css><text>Aucune Anomalie possedee.</text></Label>
+
+  <Texture><Anchors><Anchor><AbsDimension x="315" y="60" /></Anchor></Anchors><Size><AbsDimension x="300" y="565" /></Size><autoGrid>true</autoGrid><uri>[local.assets]tx_blockBackground</uri></Texture>
+  <Label><Anchors><Anchor><AbsDimension x="335" y="74" /></Anchor></Anchors><Size><AbsDimension x="260" y="28" /></Size><css>[local.css]title.css</css><text>Anomalie equipee</text></Label>
+  <Label><Anchors><Anchor><AbsDimension x="335" y="112" /></Anchor></Anchors><Size><AbsDimension x="260" y="22" /></Size><css>[local.css]normal.css</css><text>Slot I</text></Label>
+  <Slot name="slot_equipped"><Anchors><Anchor><AbsDimension x="429" y="140" /></Anchor></Anchors><Size><AbsDimension x="72" y="72" /></Size></Slot>
+  <Texture name="tx_echo_art"><Anchors><Anchor><AbsDimension x="337" y="225" /></Anchor></Anchors><Size><AbsDimension x="256" y="256" /></Size><keepRatio>true</keepRatio><uri>[config.mod.path]Ankama_Anomalies/assets/echo-central-v2.png</uri></Texture>
+  <Label><Anchors><Anchor><AbsDimension x="345" y="510" /></Anchor></Anchors><Size><AbsDimension x="240" y="45" /></Size><css>[local.css]normal.css</css><text>Slots II et III verrouilles</text></Label>
+
+  <Texture><Anchors><Anchor><AbsDimension x="627" y="60" /></Anchor></Anchors><Size><AbsDimension x="315" y="565" /></Size><autoGrid>true</autoGrid><uri>[local.assets]tx_blockBackground</uri></Texture>
+  <Label><Anchors><Anchor><AbsDimension x="644" y="74" /></Anchor></Anchors><Size><AbsDimension x="280" y="28" /></Size><css>[local.css]title.css</css><text>Details de l'anomalie</text></Label>
+  <Slot name="slot_selected"><Anchors><Anchor><AbsDimension x="644" y="115" /></Anchor></Anchors><Size><AbsDimension x="72" y="72" /></Size></Slot>
+  <Label name="lbl_name"><Anchors><Anchor><AbsDimension x="730" y="116" /></Anchor></Anchors><Size><AbsDimension x="125" y="28" /></Size><html>true</html><css>[local.css]normal.css</css></Label>
+  <Label name="lbl_rarity"><Anchors><Anchor><AbsDimension x="850" y="120" /></Anchor></Anchors><Size><AbsDimension x="75" y="24" /></Size><html>true</html><css>[local.css]normal.css</css></Label>
+  <Label name="lbl_level"><Anchors><Anchor><AbsDimension x="730" y="150" /></Anchor></Anchors><Size><AbsDimension x="170" y="22" /></Size><css>[local.css]normal.css</css></Label>
+  <Label name="lbl_rolls"><Anchors><Anchor><AbsDimension x="644" y="215" /></Anchor></Anchors><Size><AbsDimension x="280" y="115" /></Size><html>true</html><css>[local.css]normal.css</css></Label>
+  <Label name="lbl_lore"><Anchors><Anchor><AbsDimension x="644" y="340" /></Anchor></Anchors><Size><AbsDimension x="280" y="70" /></Size><html>true</html><css>[local.css]normal.css</css></Label>
+  <Label name="lbl_effect"><Anchors><Anchor><AbsDimension x="644" y="420" /></Anchor></Anchors><Size><AbsDimension x="280" y="100" /></Size><html>true</html><css>[local.css]normal.css</css></Label>
+  <simpleButton name="btn_equip" label="Equiper"><Anchors><Anchor><AbsDimension x="644" y="554" /></Anchor></Anchors><Size><AbsDimension x="280" y="38" /></Size><Hooks><onRelease /></Hooks></simpleButton>
+ </Container>
+</Definition>

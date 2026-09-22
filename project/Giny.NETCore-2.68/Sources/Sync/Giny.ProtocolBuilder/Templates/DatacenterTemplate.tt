@@ -1,0 +1,19 @@
+﻿<#= Converter.GetImports() #>
+
+namespace <#= Converter.GetNamespace() #>
+{
+<#= Converter.GetD2OAttribute() #>    public class <#= Converter.GetClassName() #> : <#= Converter.GetExtends() #> , <#= Converter.GetImplements() #>
+    {
+        <#= Converter.GetD2OModule() #>
+        <#= Converter.GetD2OId() #>
+        <#= Converter.GetTextFields() #>
+        <#= Converter.GetD2OClassProperties() #>
+    }
+}
+
+<#@ template language="C#" debug="true"  #>
+<#@ output extension=".cs" #>
+<#@ assembly name="System.dll" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ parameter name="Converter" type="Giny.ProtocolBuilder.Converters.DatacenterConverter" #>

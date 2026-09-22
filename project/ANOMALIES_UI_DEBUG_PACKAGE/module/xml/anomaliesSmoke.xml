@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Definition SYSTEM "../dtd/ui.dtd">
+<Definition usePropertiesCache="false" setOnTopOnClick="true">
+    <Constants>
+        <Constant name="assets" value="[config.ui.skin]assets.swf|" />
+        <Constant name="css" value="[config.ui.skin]css/" />
+    </Constants>
+    <Container name="mainCtr">
+        <Size>
+            <AbsDimension x="760" y="480" />
+        </Size>
+        <Anchors>
+            <Anchor point="CENTER" relativePoint="CENTER" />
+        </Anchors>
+        <Texture name="tx_background">
+            <Size>
+                <RelDimension x="1" y="1" />
+            </Size>
+            <autoGrid>true</autoGrid>
+            <uri>[local.assets]tx_generalBackgroundWithTitle</uri>
+        </Texture>
+        <Label name="lbl_smoke_title">
+            <Anchors>
+                <Anchor>
+                    <AbsDimension x="24" y="15" />
+                </Anchor>
+            </Anchors>
+            <Size>
+                <AbsDimension x="700" y="40" />
+            </Size>
+            <css>[local.css]title.css</css>
+            <text>ANOMALIES - TEST BERILIA</text>
+        </Label>
+        <Label name="lbl_smoke_body">
+            <Anchors>
+                <Anchor>
+                    <AbsDimension x="40" y="100" />
+                </Anchor>
+            </Anchors>
+            <Size>
+                <AbsDimension x="680" y="100" />
+            </Size>
+            <css>[local.css]normal.css</css>
+            <text>Le panneau natif est correctement charge.</text>
+        </Label>
+    </Container>
+</Definition>

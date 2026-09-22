@@ -1,0 +1,12 @@
+01_anomalies_shell.png: 1100x700 px
+02_tab_selected.png: 180x52 px
+03_section_header_center.png: 477x45 px
+04_section_header_right.png: 338x45 px
+05_separator.png: 320x18 px
+06_slot_normal.png: 125x175 px
+07_slot_equipped.png: 125x175 px
+08_slot_locked.png: 125x175 px
+09_resonance_frame.png: 477x205 px
+10_info_frame.png: 338x145 px
+11_button_primary.png: 300x48 px
+12_icon_frame_border_only.png: 80x80 px

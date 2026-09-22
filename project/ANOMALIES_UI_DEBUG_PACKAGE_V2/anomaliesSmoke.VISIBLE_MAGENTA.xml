@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Definition usePropertiesCache="false">
+    <Container name="mainCtr">
+        <Size><AbsDimension x="700" y="500" /></Size>
+        <Anchors><Anchor relativePoint="CENTER" point="CENTER" /></Anchors>
+        <bgColor>0xCC00CC</bgColor>
+        <bgAlpha>0.95</bgAlpha>
+        <Label name="lbl_smoke_title">
+            <Anchors><Anchor><AbsDimension x="0" y="30" /></Anchor></Anchors>
+            <Size><AbsDimension x="700" y="100" /></Size>
+            <css>[config.ui.skin]css/normal2.css</css>
+            <cssClass>whitehugeboldcenter</cssClass>
+            <text>ANOMALIES UI TEST</text>
+        </Label>
+        <Button name="btn_close">
+            <Common>
+                <Anchors><Anchor relativePoint="BOTTOM" point="BOTTOM"><AbsDimension x="0" y="-40" /></Anchor></Anchors>
+                <Size><AbsDimension x="300" y="70" /></Size>
+                <bgColor>0x111111</bgColor><bgAlpha>1</bgAlpha>
+                <Label><Size><RelDimension x="1" y="1" /></Size><css>[config.ui.skin]css/normal2.css</css><cssClass>whitehugeboldcenter</cssClass><text>FERMER</text></Label>
+            </Common>
+        </Button>
+    </Container>
+</Definition>

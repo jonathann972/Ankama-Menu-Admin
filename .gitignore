@@ -1,0 +1,30 @@
+# Generated build output
+**/bin/
+**/obj/
+**/.vs/
+**/node_modules/
+**/logs/
+
+# Local/runtime state and secrets
+**/db-data/
+**/database/
+**/config.json
+**/appsettings*.json
+*.user
+*.lock
+
+# Client/generated binaries and backups
+*.exe
+*.dll
+*.pdb
+*.swf
+*.bak
+*.dmp
+*.log
+*.d2o
+*.d2o.*
+*.zip
+*.7z
+*.rar
+*.jar
+

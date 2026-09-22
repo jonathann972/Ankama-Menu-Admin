@@ -1,0 +1,363 @@
+CAHIER DES CHARGES — INTERFACE ANOMALIES
+Projet : serveur Dofus 2.68 / Giny.NETCore
+Date de rédaction : 21 septembre 2026
+Statut : préparation de la prochaine session de développement
+
+======================================================================
+1. OBJECTIF
+======================================================================
+
+Créer une véritable interface Anomalies, propre et réutilisable, proche de
+l’image de référence :
+
+  C:\Users\Johnn\Downloads\Image Codex 21 sept. 2026, 01_49_15.png
+
+L’interface doit permettre de consulter les Anomalies possédées, afficher
+leurs caractéristiques et équiper/déséquiper l’Anomalie du premier slot.
+
+Cette étape concerne uniquement l’interface et son intégration stable.
+Ne pas ajouter de nouvelle Anomalie, de nouveaux effets de combat, de
+recyclage, de reroll, de Relique ou de corruption.
+
+======================================================================
+2. ÉTAT FONCTIONNEL ACTUEL
+======================================================================
+
+- Écho existe avec l’ID objet 32760.
+- Type d’objet : Anomalie (type 290).
+- Rareté : Épique.
+- Les exemplaires possèdent des jets individuels persistants :
+    - effet 3100 : chance de répétition, stockée en dixièmes ;
+    - effet 3101 : puissance de l’Écho en pourcentage.
+- L’effet 3102 marque temporairement, côté client, l’exemplaire actif.
+- Le véritable UID actif est sauvegardé côté serveur dans :
+    characters.ActiveAnomalyItemUid
+- Activation disponible côté serveur :
+    /anomaly <UID>
+- Désactivation disponible côté serveur :
+    /anomaly off
+- L’effet de combat d’Écho est déjà fonctionnel.
+- Le serveur World compile et fonctionne.
+
+Une interface de secours est actuellement déployée. Elle est dessinée
+directement en ActionScript/Flash, sans XML, afin d’éviter le blocage à 48 %.
+Elle confirme que le point d’entrée du module et les interactions fonctionnent.
+
+======================================================================
+3. PROBLÈMES DE L’INTERFACE ACTUELLE
+======================================================================
+
+- Le bouton Anomalies apparaît pendant l’écran de chargement.
+- Le bouton est positionné avec des coordonnées fixes.
+- Il ne peut pas être déplacé par le joueur.
+- Sa position n’est pas sauvegardée.
+- Il ne s’intègre pas réellement au HUD natif de Dofus.
+- Le panneau est un prototype brut, très éloigné de l’image de référence.
+- Les textes se chevauchent ou sont tronqués.
+- L’icône d’Écho n’est pas affichée dans le panneau.
+- Il manque les cartes, les slots, les cadres, les filtres et le décor central.
+- Les accents ont été temporairement retirés de certains textes.
+- Le panneau ne se redimensionne pas encore proprement avec la fenêtre.
+
+======================================================================
+4. CONTRAINTE CRITIQUE : CHARGEMENT À 48 %
+======================================================================
+
+Deux tentatives ont provoqué un chargement infini à 48 % :
+
+1. Modification/recompilation de BannerMenu et de plusieurs classes natives.
+2. Enregistrement d’un module personnalisé chargeant ses XML au démarrage.
+
+La version actuellement fonctionnelle contourne le problème :
+
+- le module Anomalies est enregistré dans com.ankamagames.dofus.Modules ;
+- il ne déclare aucun fichier UI XML dans son fichier .dm ;
+- il ne charge aucun asset ou template pendant la phase des 48 % ;
+- son interface est créée après l’initialisation des modules.
+
+Règle de développement pour la reprise :
+
+NE JAMAIS déployer en une seule fois une modification du registre, du menu
+natif, des XML et des classes UI. Procéder par étapes testables et conserver
+un SWF fonctionnel après chaque étape.
+
+La recompilation complète de BannerMenu doit être évitée autant que possible.
+
+======================================================================
+5. COMPORTEMENT ATTENDU DU BOUTON
+======================================================================
+
+- Le bouton ne doit apparaître qu’une fois le personnage effectivement en jeu.
+- Il ne doit jamais apparaître sur :
+    - la connexion ;
+    - la sélection du serveur ;
+    - la sélection du personnage ;
+    - l’écran de chargement à 48 %.
+- Le créer à la réception de GameStart, ou après confirmation que le HUD
+  principal est chargé.
+- Le masquer/détruire lors de la déconnexion ou du retour à la sélection.
+- Le clic ouvre et ferme le panneau Anomalies.
+- Ajouter une infobulle « Anomalies » au survol.
+- Utiliser l’icône violette/vortex déjà créée.
+- Le bouton doit être déplaçable par glisser-déposer.
+- Sa position doit être limitée aux dimensions visibles de la fenêtre.
+- Sa position doit être sauvegardée avec SystemApi.setData.
+- La position doit être liée au compte ou à l’ordinateur, pas à une coordonnée
+  absolue fragile.
+- Après redimensionnement, conserver une position relative ou replacer le
+  bouton dans la zone visible.
+- Prévoir une commande ou un moyen de réinitialiser sa position.
+
+Position par défaut suggérée : près des raccourcis du HUD en bas à droite,
+sans couvrir la barre de sorts, le chat ou la mini-carte.
+
+======================================================================
+6. CIBLE VISUELLE DU PANNEAU
+======================================================================
+
+L’image de référence sert de direction artistique, pas de fichier à copier
+pixel pour pixel.
+
+Disposition générale :
+
+- fenêtre large centrée, fond sombre et bordures Dofus ;
+- titre ANOMALIES en haut à gauche ;
+- bouton d’aide près du titre ;
+- citation/lore discret en haut ;
+- bouton de fermeture en haut à droite ;
+- trois grandes zones :
+    1. Mes Anomalies ;
+    2. Anomalies équipées ;
+    3. Détails de l’anomalie.
+
+Colonne « Mes Anomalies » :
+
+- filtre Toutes ;
+- tri ;
+- grille d’Anomalies avec leurs icônes ;
+- quantité visible ;
+- sélection clairement encadrée ;
+- recherche en bas ;
+- pour cette version, seul Écho doit être présent.
+
+Zone centrale :
+
+- Slot I actif ;
+- Slot II visuellement verrouillé, niveau 100 ;
+- Slot III visuellement verrouillé, niveau 200 ;
+- seul le Slot I est fonctionnel dans cette version ;
+- grande illustration/vortex d’Écho au centre ;
+- ambiance violette, fragments flottants et cercle rituel ;
+- citation discrète sous l’illustration.
+
+Colonne de détails :
+
+- icône d’Écho ;
+- nom Écho en violet ;
+- rareté Épique en violet ;
+- niveau 1 ;
+- catégorie Anomalie ;
+- poids et prix moyen si disponibles ;
+- titre doré « Jets de l’Anomalie » ;
+- valeur réelle en vert ;
+- plage possible en gris ;
+- lore en gris et italique ;
+- bouton Équiper/Déséquiper ;
+- encadré « Effet actuel » reprenant les valeurs exactes.
+
+Exemple d’affichage :
+
+  Chance de répétition : 18,2 % (17–20 %)
+  Puissance de l’Écho : 42 % (40–60 %)
+
+======================================================================
+7. ARCHITECTURE RECOMMANDÉE
+======================================================================
+
+Conserver le registre minimal qui fonctionne actuellement, mais ne plus créer
+le bouton dès la méthode main() du module.
+
+Étape A — cycle de vie fiable :
+
+- écouter le hook GameStart ;
+- créer le bouton uniquement à ce moment ;
+- gérer la destruction du bouton au changement de contexte ;
+- vérifier plusieurs connexions/déconnexions sans doublon.
+
+Étape B — bouton mobile :
+
+- PRESS : mémoriser le point de départ ;
+- MOUSE_MOVE : déplacer le bouton ;
+- RELEASE : borner et sauvegarder la position ;
+- distinguer un clic d’un déplacement ;
+- restaurer la position au prochain GameStart.
+
+Étape C — panneau Flash stable :
+
+- rester temporairement sur des DisplayObject Flash directs ;
+- créer des composants réutilisables : Panel, Card, Slot, StyledLabel,
+  StyledButton et IconView ;
+- corriger complètement mesures, alignements, retours à la ligne et masques ;
+- charger les images uniquement après GameStart ;
+- prévoir un fallback vectoriel si une image ne charge pas.
+
+Étape D — rapprochement du style Dofus :
+
+- réutiliser prudemment les textures déjà disponibles dans le thème ;
+- ne charger qu’une ressource à la fois et tester après chaque ajout ;
+- ne pas réactiver les XML de module tant que leur compilation en .d2ui et
+  leur cycle de chargement ne sont pas maîtrisés ;
+- si une intégration XML est retentée, commencer par un XML vide minimal,
+  puis ajouter un seul composant à la fois.
+
+======================================================================
+8. ASSETS EXISTANTS
+======================================================================
+
+Icônes générées :
+
+  2.68.0.0\Dofus\ui\Ankama_GameUiCore\assets\anomalies\
+  2.68.0.0\Dofus\ui\Ankama_Anomalies\assets\
+
+Fichier principal pour le bouton :
+
+  anomaly-vortex-36.png
+
+Référence visuelle principale :
+
+  C:\Users\Johnn\Downloads\Image Codex 21 sept. 2026, 01_49_15.png
+
+Créer ultérieurement, si nécessaire :
+
+- une grande illustration centrale optimisée ;
+- un cadre épique réutilisable ;
+- un fond central séparé ;
+- les états normal/survol/pressé du bouton ;
+- des versions adaptées aux différentes résolutions.
+
+======================================================================
+9. FICHIERS ACTUELLEMENT CONCERNÉS
+======================================================================
+
+Client :
+
+  2.68.0.0\Dofus\DofusInvoker.swf
+  2.68.0.0\Dofus\ui\Ankama_Anomalies\Ankama_Anomalies.dm
+  2.68.0.0\Dofus\ui\Ankama_Anomalies\xml\anomalyLauncher.xml
+  2.68.0.0\Dofus\ui\Ankama_Anomalies\xml\anomaliesUi.xml
+  2.68.0.0\Dofus\ui\Ankama_Anomalies\assets\anomaly-vortex-36.png
+
+Sources de patch utilisées pour la version stable actuelle :
+
+  serveur-local\patches\anomalies-module-registry\
+  serveur-local\patches\DofusInvoker.anomalies-direct.swf
+  serveur-local\patches\anomalies-direct-verify\
+
+Serveur :
+
+  Giny.NETCore-2.68\Sources\Servers\Giny.World\Managers\Items\Anomalies\AnomalyRollManager.cs
+  Giny.NETCore-2.68\Sources\Servers\Giny.World\Handlers\Approach\CharacterHandler.cs
+  Giny.NETCore-2.68\Sources\Servers\Giny.World\Managers\Chat\ChatCommands.cs
+
+======================================================================
+10. SAUVEGARDES IMPORTANTES
+======================================================================
+
+Sauvegarde stable connue, sans l’interface Anomalies :
+
+  2.68.0.0\Dofus\DofusInvoker.swf.before-anomalies-ui-20260921.bak
+
+Hash SHA-256 de cette version stable :
+
+  38789983E6C7527633919D218D6DA6C84AA072984591E5DA82B75B7BFF32F457
+
+Autres sauvegardes créées pendant les essais :
+
+  DofusInvoker.swf.before-anomalies-native-ui-20260921.bak
+  DofusInvoker.swf.before-anomalies-registry-20260921.bak
+  ui\Ankama_GameUiCore\ui\proto.xml.before-anomalies-native-ui-20260921.bak
+
+Ne supprimer aucune de ces sauvegardes avant validation complète.
+
+======================================================================
+11. PROCÉDURE DE DÉVELOPPEMENT OBLIGATOIRE
+======================================================================
+
+Pour chaque étape :
+
+1. Partir du dernier SWF confirmé fonctionnel.
+2. Sauvegarder le SWF avant modification.
+3. Modifier une seule responsabilité à la fois.
+4. Compiler dans un fichier candidat distinct.
+5. Réexporter les classes modifiées avec JPEXS pour les vérifier.
+6. Comparer les classes réellement modifiées.
+7. Déployer seulement après validation statique.
+8. Fermer complètement Dofus.
+9. Tester la connexion et le passage des 48 %.
+10. Tester le bouton et le panneau.
+11. Marquer le candidat comme stable avant de poursuivre.
+
+En cas de blocage à 48 % : restaurer immédiatement la sauvegarde stable et
+ne pas empiler une nouvelle correction sur le SWF défectueux.
+
+======================================================================
+12. CRITÈRES DE VALIDATION FINALE
+======================================================================
+
+- Le client dépasse systématiquement les 48 %.
+- Aucun bouton Anomalies n’apparaît avant l’arrivée effective en jeu.
+- Un seul bouton apparaît après GameStart.
+- Le bouton peut être déplacé librement.
+- La position est restaurée après redémarrage.
+- Le bouton reste dans la fenêtre après redimensionnement.
+- Le clic ouvre et ferme le panneau sans erreur.
+- Le panneau est visuellement proche de la référence.
+- Les textes ne se chevauchent jamais.
+- L’icône d’Écho est visible dans la liste, le slot et les détails.
+- Les jets affichés sont ceux de l’exemplaire sélectionné.
+- L’Écho actif est clairement identifiable.
+- Équiper/Déséquiper appelle correctement le serveur.
+- L’état actif revient correctement après reconnexion.
+- Aucun changement n’est apporté au gameplay déjà validé.
+- Aucune nouvelle Anomalie n’est créée.
+
+======================================================================
+13. PRIORITÉ À LA REPRISE
+======================================================================
+
+Priorité 1 : retarder l’apparition du bouton jusqu’à GameStart.
+Priorité 2 : rendre le bouton déplaçable et sauvegarder sa position.
+Priorité 3 : corriger la mise en page et les textes du panneau actuel.
+Priorité 4 : intégrer les icônes et la grande illustration centrale.
+Priorité 5 : rapprocher progressivement le rendu de la référence.
+======================================================================
+MISE A JOUR - INTEGRATION BERILIA
+======================================================================
+
+- Le bouton est maintenant injecte dans la grille native du BannerMenu apres
+  GameStart. Il ne flotte plus au-dessus des ecrans de chargement.
+- Le prototype Flash direct est remplace au clic par la vue Berilia
+  anomaliesUi declaree dans le descripteur du module.
+- La vue utilise les textures, composants, grille, slots et boutons du theme
+  Dofus 2.68.
+- L'icone temporaire du bouton utilise le symbole natif btn_breach afin
+  d'eliminer le carre magenta provoque par le chargement du PNG externe.
+- Sauvegarde client avant cette etape :
+  2.68.0.0\Dofus\DofusInvoker.swf.before-berilia-anomalies-ui-20260921.bak
+======================================================================
+ARCHITECTURE RETENUE - MODULE AUTONOME
+======================================================================
+
+- Toute l'interface Anomalies reside dans ui\Ankama_Anomalies : code AS3,
+  XML Berilia, SWF et assets.
+- DofusInvoker ne contient plus le panneau ni sa logique. Il contient seulement
+  AnomaliesModuleBridge, charge de transmettre les API au module autonome.
+- Le module enregistre anomaliesUi apres GameStart, puis injecte son bouton
+  dans la grille native gd_btnUis du BannerMenu.
+- Le fichier .dm ne declare aucune UI a parser pendant le chargement initial,
+  ce qui evite le blocage a 48 pour cent.
+- Le panneau est charge uniquement au clic sur le bouton Anomalies.
+- Illustration centrale actuelle : assets\echo-central-v2.png.
+- Pour modifier l'interface, recompiler uniquement Ankama_Anomalies.swf ; le
+  pont du client n'a pas a etre modifie.
+

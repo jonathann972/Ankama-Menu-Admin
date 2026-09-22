@@ -1,0 +1,120 @@
+﻿@using Giny.Protocol.Enums
+@using Giny.World.Managers.Effects
+@using Giny.World.Records.Monsters
+@using Giny.World.Records.Spells
+@using Giny.World.Records.Breeds
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+
+<MudGrid>
+    <MudItem xs="3">
+        <MudPaper Outlined=true>
+            <MudList Color="Color.Primary" Dense="true" Clickable="true">
+                <MudListSubheader>
+                    <MudSelect T="int" Label="Classe" Dense="true" Value="SelectedBreedId" ValueChanged="OnBreedChanged">
+                        <MudSelectItem Value="0">Toutes les classes</MudSelectItem>
+                        @foreach (var breed in BreedRecord.GetBreeds().OrderBy(x => x.Id))
+                        {
+                            <MudSelectItem Value="@((int)breed.Id)">@breed.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudTextField Label="Search" TextChanged=OnSearchTextChanged @bind-Value="@Search"
+                                  AdornmentColor="Color.Primary" AdornmentIcon="@Icons.Filled.Search"
+                                  Adornment="Adornment.End" Immediate="true" Variant="Variant.Outlined" />
+                </MudListSubheader>
+
+                <div style="height:80vh;overflow-y:scroll">
+                    <Virtualize Items="@SearchResults">
+
+                        <MudListItem OnClick="() => spellComponent.SelectSpell(context)" Value="context">
+
+                            <div class="d-flex flex-row gap-3 align-center">
+                                <MudIcon Icon="@Icons.Outlined.Workspaces" />
+                                <div class="d-flex flex-column">
+                            <MudText Style="font-size:14px;line-height:16px;font-weight:600;">@context.Name (@context.Id)</MudText>
+                            <MudText Typo=Typo.caption Style="line-height:16px">@(string.IsNullOrWhiteSpace(context.Description) ? "" : context.Description)</MudText>
+                            @if (context.VariantRecord != null)
+                            {
+                                <MudText Typo="Typo.caption">Variante : @context.VariantRecord.Name (@context.VariantRecord.Id)</MudText>
+                            }
+
+                                </div>
+                            </div>
+
+                        </MudListItem>
+
+
+                    </Virtualize>
+                </div>
+
+            </MudList>
+
+        </MudPaper>
+
+    </MudItem>
+
+    <MudItem xs="9">
+        <SpellComponent @ref="spellComponent"></SpellComponent>
+    </MudItem>
+
+
+</MudGrid>
+
+
+@code {
+
+    [Inject]
+    private IDialogService DialogService
+    {
+        get;
+        set;
+    }
+
+    private List<SpellRecord> SearchResults
+    {
+        get;
+        set;
+    } = new List<SpellRecord>();
+
+    private string Search
+    {
+        get;
+        set;
+    } = "";
+    private int SelectedBreedId { get; set; }
+
+    private SpellComponent? spellComponent;
+
+    private void OnSearchTextChanged()
+    {
+        RefreshResults();
+    }
+
+    private void OnBreedChanged(int value)
+    {
+        SelectedBreedId = value;
+        RefreshResults();
+    }
+
+    private void RefreshResults()
+    {
+        var spells = SpellRecord.GetSpellRecords();
+        if (SelectedBreedId != 0)
+        {
+            var breed = BreedRecord.GetBreed((byte)SelectedBreedId);
+            var ids = breed?.SpellIds ?? Array.Empty<short>();
+            spells = spells.Where(x => ids.Contains(x.Id));
+        }
+        if (!string.IsNullOrWhiteSpace(Search))
+            spells = spells.Where(x => x.ToString().Contains(Search, StringComparison.OrdinalIgnoreCase));
+        SearchResults = spells.OrderBy(x => x.Id).ToList();
+
+        StateHasChanged();
+    }
+    protected override void OnAfterRender(bool firstRender)
+    {
+
+    }
+
+
+}

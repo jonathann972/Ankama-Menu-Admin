@@ -1,0 +1,200 @@
+﻿using Giny.AS3;
+using Giny.AS3.Enums;
+using Giny.AS3.Expressions;
+using Giny.Core.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Giny.ProtocolBuilder.Converters
+{
+    public class DatacenterConverter : DofusConverter
+    {
+        public override bool WriteDefaultFieldValues => false;
+
+        public DatacenterConverter(AS3File file) : base(file)
+        {
+
+        }
+        public override string GetNamespace()
+        {
+            return "Giny.IO.D2OClasses";
+        }
+        public override string[] Imports => new string[]
+        {
+            "System",
+            "Giny.Core.IO.Interfaces",
+            "Giny.IO.D2O",
+            "Giny.IO.D2OTypes",
+            "System.Collections.Generic",
+        };
+        public override string GetExtends()
+        {
+            return File.Extends == string.Empty ? "IDataObject" : File.Extends;
+        }
+        public override string GetImplements()
+        {
+            return "IIndexedData";
+        }
+        protected override List<AS3Method> SelectMethodsToWrite()
+        {
+            return new List<AS3Method>();
+        }
+        public string GetD2OModule()
+        {
+            var field = File.GetField("MODULE");
+
+            if (field == null)
+            {
+                return string.Empty;
+            }
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine(string.Format("public const string MODULE = {0};", field.GetValue<ConstantStringExpression>().Value));
+
+            return sb.ToString();
+        }
+        public string GetD2OAttribute()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("[D2OClass(\"" + File.ClassName + "\", \"" + File.Package + "\")]");
+            return sb.ToString();
+        }
+        public string GetD2OId()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            var field = File.GetFields(x => x.Name == "_id" || x.Name == "id").FirstOrDefault();
+
+            if (field != null && (field.RawType == "int" || field.RawType == "uint"))
+            {
+                sb.AppendLine("public int Id => (int)" + VerifyVariableName(field.Name) + ";");
+
+            }
+            else
+            {
+                sb.AppendLine("public int Id => throw new NotImplementedException();");
+
+            }
+            return sb.ToString();
+        }
+        public override string GetConvertedType(AS3Type type)
+        {
+            if (type.RawType.Contains("Vector"))
+            {
+                return "List<" + GetConvertedType(new AS3Type(type.GetGenericType())) + ">";
+            }
+            if (type.RawType.Contains("com."))
+            {
+                return type.RawType.Split(".").Last();
+            }
+            return base.GetConvertedType(type);
+        }
+        public string GetD2OClassProperties()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach (var field in FieldsToWrite)
+            {
+                if (field.Name == "APRemoval")
+                {
+
+                }
+                string variableName = VerifyVariableName(field.Name);
+
+                if (variableName.StartsWith("_"))
+                {
+                    variableName = variableName.Remove(0, 1);
+                }
+
+                if (variableName == "id")
+                {
+                    variableName += "_";
+                }
+
+                if (variableName.First() == '@')
+                {
+                    variableName = variableName.Remove(0, 1);
+                }
+
+
+                variableName = variableName.FirstCharToUpper();
+
+                if (variableName == File.ClassName)
+                {
+                    variableName += "_";
+                }
+
+                if (variableName == field.Name)
+                {
+                    variableName = "_" + variableName;
+                }
+
+                sb.AppendLine("[D2OIgnore]");
+                sb.AppendLine("public " + GetConvertedType(field.Variable.Type) + " " + variableName);
+                sb.AppendLine("{");
+
+                sb.AppendLine("get");
+                sb.AppendLine("{");
+
+                sb.AppendLine("return " + VerifyVariableName(field.Variable.Name) + ";");
+
+                sb.AppendLine("}");
+                sb.AppendLine("set");
+                sb.AppendLine("{");
+
+                sb.AppendLine(VerifyVariableName(field.Variable.Name) + " = value;");
+
+                sb.AppendLine("}");
+
+                sb.AppendLine("}");
+            }
+            return sb.ToString();
+        }
+        protected override List<AS3Field> SelectFieldsToWrite()
+        {
+            return File.GetFields(x => (AS3AccessorsEnum.@public).HasFlag(x.Accessor) && x.Modifiers == AS3ModifiersEnum.None).ToList();
+        }
+
+        public override void PostPrepare()
+        {
+            if (GetClassName() == "EffectInstance")
+            {
+                AddPrivateField("_rawZone");
+
+            }
+
+            if (GetClassName() == "EffectZone")
+            {
+                AddPrivateField("_rawDisplayZone");
+                AddPrivateField("_rawActivationZone");
+            }
+
+            if (GetClassName() == "CensoredContent")
+            {
+                AddPrivateField("_type");
+                AddPrivateField("_oldValue");
+                AddPrivateField("_newValue");
+                AddPrivateField("_lang");
+            }
+
+            if (GetClassName() == "Hint")
+            {
+                AddPrivateField("_categoryId");
+            }
+
+
+
+        }
+
+        private void AddPrivateField(string name)
+        {
+            var field = File.GetField(name);
+            field.Variable.Name = field.Name.Replace("_", "");
+            field.Accessor = AS3AccessorsEnum.@public;
+            FieldsToWrite.Add(field);
+        }
+    }
+}

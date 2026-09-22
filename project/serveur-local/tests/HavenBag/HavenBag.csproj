@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings></PropertyGroup>
+  <ItemGroup><Compile Include="../../../Giny.NETCore-2.68/Sources/Servers/Giny.World/Handlers/Roleplay/HavenBag/HavenBagHandler.cs" Link="HavenBagHandler.cs" /></ItemGroup>
+</Project>
