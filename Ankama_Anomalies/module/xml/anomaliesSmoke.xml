@@ -1,30 +1,87 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Definition usePropertiesCache="false">
-    <Container name="mainCtr">
-        <Size><AbsDimension x="700" y="500" /></Size>
-        <Anchors><Anchor relativePoint="CENTER" point="CENTER" /></Anchors>
-        <bgColor>0xCC00CC</bgColor>
-        <bgAlpha>0.95</bgAlpha>
-        <Label name="lbl_smoke_title">
-            <Anchors><Anchor><AbsDimension x="0" y="30" /></Anchor></Anchors>
-            <Size><AbsDimension x="700" y="100" /></Size>
-            <css>[config.ui.skin]css/normal2.css</css>
-            <cssClass>whitehugeboldcenter</cssClass>
-            <text>ANOMALIES NATIVE OK</text>
-        </Label>
-        <Button name="btn_close">
-            <Common>
-                <Anchors><Anchor relativePoint="BOTTOM" point="BOTTOM"><AbsDimension x="0" y="-40" /></Anchor></Anchors>
-                <Size><AbsDimension x="300" y="70" /></Size>
-                <bgColor>0x111111</bgColor>
-                <bgAlpha>1</bgAlpha>
-                <Label>
-                    <Size><RelDimension x="1" y="1" /></Size>
-                    <css>[config.ui.skin]css/normal2.css</css>
-                    <cssClass>whitehugeboldcenter</cssClass>
-                    <text>FERMER</text>
-                </Label>
-            </Common>
-        </Button>
-    </Container>
+ <Container name="mainCtr">
+  <Size><AbsDimension x="1100" y="700" /></Size>
+  <Anchors><Anchor relativePoint="CENTER" point="CENTER" /></Anchors>
+
+  <Texture name="tx_background" strata="LOW">
+   <Size><AbsDimension x="1100" y="700" /></Size>
+   <uri>[config.mod.path]Ankama_Anomalies/assets/01_anomalies_shell.png</uri>
+  </Texture>
+
+  <Texture name="tx_tab_selected">
+   <Anchors><Anchor><AbsDimension x="22" y="79" /></Anchor></Anchors>
+   <Size><AbsDimension x="180" y="52" /></Size>
+   <uri>[config.mod.path]Ankama_Anomalies/assets/tab_selected_contour_180x52.png</uri>
+  </Texture>
+
+  <Texture name="tx_center_header">
+   <Anchors><Anchor><AbsDimension x="224" y="84" /></Anchor></Anchors>
+   <Size><AbsDimension x="477" y="45" /></Size>
+   <uri>[config.mod.path]Ankama_Anomalies/assets/03_section_header_center_477x45.png</uri>
+  </Texture>
+  <Label><Anchors><Anchor><AbsDimension x="245" y="94" /></Anchor></Anchors><Size><AbsDimension x="435" y="28" /></Size><css>[config.ui.skin]css/normal2.css</css><cssClass>whiteboldcenter</cssClass><text>MES ANOMALIES</text></Label>
+
+  <Texture name="tx_right_header">
+   <Anchors><Anchor><AbsDimension x="734" y="84" /></Anchor></Anchors>
+   <Size><AbsDimension x="338" y="45" /></Size>
+   <uri>[config.mod.path]Ankama_Anomalies/assets/04_section_header_right_338x45.png</uri>
+  </Texture>
+  <Label><Anchors><Anchor><AbsDimension x="750" y="94" /></Anchor></Anchors><Size><AbsDimension x="306" y="28" /></Size><css>[config.ui.skin]css/normal2.css</css><cssClass>whiteboldcenter</cssClass><text>DETAILS DE L'ANOMALIE</text></Label>
+
+  <Texture name="tx_slot_normal">
+   <Anchors><Anchor><AbsDimension x="250" y="160" /></Anchor></Anchors>
+   <Size><AbsDimension x="125" y="175" /></Size>
+   <uri>[config.mod.path]Ankama_Anomalies/assets/06_slot_normal.png</uri>
+  </Texture>
+  <Texture name="tx_slot_equipped">
+   <Anchors><Anchor><AbsDimension x="400" y="160" /></Anchor></Anchors>
+   <Size><AbsDimension x="125" y="175" /></Size>
+   <uri>[config.mod.path]Ankama_Anomalies/assets/07_slot_equipped.png</uri>
+  </Texture>
+  <Texture name="tx_slot_locked">
+   <Anchors><Anchor><AbsDimension x="550" y="160" /></Anchor></Anchors>
+   <Size><AbsDimension x="125" y="175" /></Size>
+   <uri>[config.mod.path]Ankama_Anomalies/assets/08_slot_locked.png</uri>
+  </Texture>
+
+  <Texture name="tx_separator">
+   <Anchors><Anchor><AbsDimension x="303" y="365" /></Anchor></Anchors>
+   <Size><AbsDimension x="320" y="18" /></Size>
+   <uri>[config.mod.path]Ankama_Anomalies/assets/05_separator_320x18.png</uri>
+  </Texture>
+  <Texture name="tx_resonance">
+   <Anchors><Anchor><AbsDimension x="224" y="405" /></Anchor></Anchors>
+   <Size><AbsDimension x="477" y="205" /></Size>
+   <uri>[config.mod.path]Ankama_Anomalies/assets/09_resonance_frame.png</uri>
+  </Texture>
+  <Label><Anchors><Anchor><AbsDimension x="250" y="430" /></Anchor></Anchors><Size><AbsDimension x="425" y="60" /></Size><css>[config.ui.skin]css/normal2.css</css><cssClass>greycenter</cssClass><multiline>true</multiline><text>Les objets Anomalies seront ajoutes au prochain test.</text></Label>
+
+  <Texture name="tx_info">
+   <Anchors><Anchor><AbsDimension x="734" y="160" /></Anchor></Anchors>
+   <Size><AbsDimension x="338" y="145" /></Size>
+   <uri>[config.mod.path]Ankama_Anomalies/assets/10_info_frame.png</uri>
+  </Texture>
+  <Texture name="tx_icon_frame">
+   <Anchors><Anchor><AbsDimension x="758" y="186" /></Anchor></Anchors>
+   <Size><AbsDimension x="80" y="80" /></Size>
+   <uri>[config.mod.path]Ankama_Anomalies/assets/12_icon_frame_border_only_80x80.png</uri>
+  </Texture>
+  <Label><Anchors><Anchor><AbsDimension x="852" y="190" /></Anchor></Anchors><Size><AbsDimension x="190" y="65" /></Size><css>[config.ui.skin]css/normal2.css</css><cssClass>greycenter</cssClass><multiline>true</multiline><text>Selectionnez une Anomalie</text></Label>
+
+  <Texture name="tx_primary_button">
+   <Anchors><Anchor><AbsDimension x="753" y="605" /></Anchor></Anchors>
+   <Size><AbsDimension x="300" y="48" /></Size>
+   <uri>[config.mod.path]Ankama_Anomalies/assets/button_primary_300x48.png</uri>
+  </Texture>
+  <Label><Anchors><Anchor><AbsDimension x="753" y="616" /></Anchor></Anchors><Size><AbsDimension x="300" y="28" /></Size><css>[config.ui.skin]css/normal2.css</css><cssClass>whiteboldcenter</cssClass><text>EQUIPER</text></Label>
+
+  <Button name="btn_close">
+   <Common>
+    <Anchors><Anchor><AbsDimension x="1035" y="18" /></Anchor></Anchors>
+    <Size><AbsDimension x="48" y="48" /></Size>
+    <bgAlpha>0</bgAlpha>
+   </Common>
+  </Button>
+ </Container>
 </Definition>
