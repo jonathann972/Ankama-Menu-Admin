@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Definition>
+ <Import url="[config.mod.template.button]iconButton.xml" />
+ <Container>
+  <Anchors><Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMRIGHT"><AbsDimension x="-426" y="-55" /></Anchor></Anchors>
+  <iconButton name="btn_anomalies">
+   <Size><AbsDimension x="36" y="36" /></Size>
+   <uri>[config.mod.path]Ankama_Anomalies/assets/anomaly-vortex-36.png</uri>
+   <Hooks><onRelease /><onRollOver /><onRollOut /></Hooks>
+  </iconButton>
+ </Container>
+</Definition>

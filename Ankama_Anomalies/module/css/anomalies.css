@@ -1,0 +1,47 @@
+epic {
+    font-family: Roboto;
+    font-size: 16px;
+    color: #D85CFF;
+    font-weight: bold;
+}
+
+epicright_epic {
+    text-align: right;
+}
+
+epiccenter_epic {
+    text-align: center;
+}
+
+gold {
+    font-family: Roboto;
+    font-size: 16px;
+    color: #E9C766;
+    font-weight: bold;
+}
+
+value {
+    font-family: Roboto;
+    font-size: 14px;
+    color: #65E879;
+    font-weight: bold;
+}
+
+range {
+    font-family: Roboto;
+    font-size: 14px;
+    color: #929292;
+}
+
+body {
+    font-family: Roboto;
+    font-size: 14px;
+    color: #DDD8CE;
+}
+
+lore {
+    font-family: Roboto;
+    font-size: 13px;
+    color: #AAA6A0;
+    font-style: italic;
+}
