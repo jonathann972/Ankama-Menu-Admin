@@ -1,30 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Definition usePropertiesCache="false">
-    <Container name="mainCtr">
-        <Size><AbsDimension x="700" y="500" /></Size>
-        <Anchors><Anchor relativePoint="CENTER" point="CENTER" /></Anchors>
-        <bgColor>0xCC00CC</bgColor>
-        <bgAlpha>0.95</bgAlpha>
-        <Label name="lbl_smoke_title">
-            <Anchors><Anchor><AbsDimension x="0" y="30" /></Anchor></Anchors>
-            <Size><AbsDimension x="700" y="100" /></Size>
-            <css>[config.ui.skin]css/normal2.css</css>
-            <cssClass>whitehugeboldcenter</cssClass>
-            <text>ANOMALIES NATIVE OK</text>
-        </Label>
-        <Button name="btn_close">
-            <Common>
-                <Anchors><Anchor relativePoint="BOTTOM" point="BOTTOM"><AbsDimension x="0" y="-40" /></Anchor></Anchors>
-                <Size><AbsDimension x="300" y="70" /></Size>
-                <bgColor>0x111111</bgColor>
-                <bgAlpha>1</bgAlpha>
-                <Label>
-                    <Size><RelDimension x="1" y="1" /></Size>
-                    <css>[config.ui.skin]css/normal2.css</css>
-                    <cssClass>whitehugeboldcenter</cssClass>
-                    <text>FERMER</text>
-                </Label>
-            </Common>
-        </Button>
-    </Container>
+<Definition usePropertiesCache="false" setOnTopOnClick="true">
+ <Import url="[config.mod.template.button]iconButton.xml" />
+ <Import url="[config.mod.template.button]simpleButton.xml" />
+ <Constants><Constant name="assets" value="[config.ui.skin]assets.swf|" /><Constant name="css" value="[config.ui.skin]css/" /></Constants>
+ <Container name="mainCtr">
+  <Anchors><Anchor point="CENTER" relativePoint="CENTER" /></Anchors><Size><AbsDimension x="960" y="650" /></Size>
+  <Texture name="tx_background" strata="LOW"><Size><AbsDimension x="960" y="650" /></Size><autoGrid>true</autoGrid><uri>[local.assets]tx_generalBackgroundWithTitle</uri></Texture>
+  <Label><Anchors><Anchor><AbsDimension x="24" y="14" /></Anchor></Anchors><Size><AbsDimension x="820" y="36" /></Size><css>[local.css]title.css</css><text>ANOMALIES</text></Label>
+  <iconButton name="btn_close"><Anchors><Anchor relativeTo="tx_background" point="TOPRIGHT" relativePoint="TOPRIGHT" /></Anchors><Size><AbsDimension x="57" y="36" /></Size><uri>[local.assets]btn_cornerCross</uri><Hooks><onRelease /></Hooks></iconButton>
+  <Container name="ctr_tab_active"><Anchors><Anchor><AbsDimension x="30" y="91" /></Anchor></Anchors><Size><AbsDimension x="140" y="4" /></Size><bgColor>0xD3A72F</bgColor><bgAlpha>1</bgAlpha></Container>
+  <simpleButton name="btn_tab_anomalies" label="Anomalies"><Anchors><Anchor><AbsDimension x="30" y="54" /></Anchor></Anchors><Size><AbsDimension x="140" y="34" /></Size><Hooks><onRelease /></Hooks></simpleButton>
+  <simpleButton name="btn_tab_fusion" label="Fusion"><Anchors><Anchor><AbsDimension x="180" y="54" /></Anchor></Anchors><Size><AbsDimension x="140" y="34" /></Size><Hooks><onRelease /></Hooks></simpleButton>
+  <simpleButton name="btn_tab_catalogue" label="Catalogue"><Anchors><Anchor><AbsDimension x="330" y="54" /></Anchor></Anchors><Size><AbsDimension x="140" y="34" /></Size><Hooks><onRelease /></Hooks></simpleButton>
+  <simpleButton name="btn_tab_effects" label="Effets"><Anchors><Anchor><AbsDimension x="480" y="54" /></Anchor></Anchors><Size><AbsDimension x="140" y="34" /></Size><Hooks><onRelease /></Hooks></simpleButton>
+  <simpleButton name="btn_tab_history" label="Historique"><Anchors><Anchor><AbsDimension x="630" y="54" /></Anchor></Anchors><Size><AbsDimension x="140" y="34" /></Size><Hooks><onRelease /></Hooks></simpleButton>
+  <simpleButton name="btn_tab_guide" label="Guide"><Anchors><Anchor><AbsDimension x="780" y="54" /></Anchor></Anchors><Size><AbsDimension x="140" y="34" /></Size><Hooks><onRelease /></Hooks></simpleButton>
+  <Container name="ctr_anomalies_content"><Size><AbsDimension x="960" y="650" /></Size>
+   <Texture><Anchors><Anchor><AbsDimension x="18" y="105" /></Anchor></Anchors><Size><AbsDimension x="285" y="520" /></Size><autoGrid>true</autoGrid><uri>[local.assets]tx_blockBackground</uri></Texture>
+   <Label><Anchors><Anchor><AbsDimension x="34" y="119" /></Anchor></Anchors><Size><AbsDimension x="250" y="28" /></Size><css>[local.css]title.css</css><text>Mes Anomalies</text></Label>
+   <Input name="inp_search"><Anchors><Anchor><AbsDimension x="34" y="157" /></Anchor></Anchors><Size><AbsDimension x="250" y="25" /></Size><css>[local.css]normal.css</css></Input>
+   <Grid name="gd_anomalies"><Anchors><Anchor><AbsDimension x="34" y="198" /></Anchor></Anchors><Size><AbsDimension x="250" y="370" /></Size><rendererName>SlotGridRenderer</rendererName><rendererArgs>,,,,,,[local.css]normal.css,,true</rendererArgs><slotWidth>72</slotWidth><slotHeight>72</slotHeight><scrollDisplay>auto</scrollDisplay><autoSelectMode>1</autoSelectMode><Hooks><onSelectItem /><onItemRollOver /><onItemRollOut /></Hooks></Grid>
+   <Label name="lbl_empty"><Anchors><Anchor><AbsDimension x="50" y="365" /></Anchor></Anchors><Size><AbsDimension x="220" y="25" /></Size><css>[local.css]normal.css</css><text>Aucune Anomalie possedee.</text></Label>
+   <Texture><Anchors><Anchor><AbsDimension x="315" y="105" /></Anchor></Anchors><Size><AbsDimension x="300" y="520" /></Size><autoGrid>true</autoGrid><uri>[local.assets]tx_blockBackground</uri></Texture>
+   <Label><Anchors><Anchor><AbsDimension x="335" y="119" /></Anchor></Anchors><Size><AbsDimension x="260" y="28" /></Size><css>[local.css]title.css</css><text>Anomalie equipee</text></Label>
+   <Label><Anchors><Anchor><AbsDimension x="335" y="157" /></Anchor></Anchors><Size><AbsDimension x="260" y="22" /></Size><css>[local.css]normal.css</css><text>Slot I</text></Label>
+   <Slot name="slot_equipped"><Anchors><Anchor><AbsDimension x="429" y="185" /></Anchor></Anchors><Size><AbsDimension x="72" y="72" /></Size></Slot>
+   <Label><Anchors><Anchor><AbsDimension x="345" y="300" /></Anchor></Anchors><Size><AbsDimension x="240" y="80" /></Size><css>[local.css]normal.css</css><text>Les emplacements II et III sont verrouilles.</text></Label>
+   <Texture><Anchors><Anchor><AbsDimension x="627" y="105" /></Anchor></Anchors><Size><AbsDimension x="315" y="520" /></Size><autoGrid>true</autoGrid><uri>[local.assets]tx_blockBackground</uri></Texture>
+   <Label><Anchors><Anchor><AbsDimension x="644" y="119" /></Anchor></Anchors><Size><AbsDimension x="280" y="28" /></Size><css>[local.css]title.css</css><text>Details de l'anomalie</text></Label>
+   <Slot name="slot_selected"><Anchors><Anchor><AbsDimension x="644" y="160" /></Anchor></Anchors><Size><AbsDimension x="72" y="72" /></Size></Slot>
+   <Label name="lbl_name"><Anchors><Anchor><AbsDimension x="730" y="161" /></Anchor></Anchors><Size><AbsDimension x="125" y="28" /></Size><html>true</html><css>[local.css]normal.css</css></Label>
+   <Label name="lbl_rarity"><Anchors><Anchor><AbsDimension x="850" y="165" /></Anchor></Anchors><Size><AbsDimension x="75" y="24" /></Size><html>true</html><css>[local.css]normal.css</css></Label>
+   <Label name="lbl_level"><Anchors><Anchor><AbsDimension x="730" y="195" /></Anchor></Anchors><Size><AbsDimension x="170" y="22" /></Size><css>[local.css]normal.css</css></Label>
+   <Label name="lbl_rolls"><Anchors><Anchor><AbsDimension x="644" y="260" /></Anchor></Anchors><Size><AbsDimension x="280" y="115" /></Size><html>true</html><multiline>true</multiline><css>[local.css]normal.css</css></Label>
+   <Label name="lbl_lore"><Anchors><Anchor><AbsDimension x="644" y="385" /></Anchor></Anchors><Size><AbsDimension x="280" y="70" /></Size><html>true</html><multiline>true</multiline><css>[local.css]normal.css</css></Label>
+   <Label name="lbl_effect"><Anchors><Anchor><AbsDimension x="644" y="465" /></Anchor></Anchors><Size><AbsDimension x="280" y="100" /></Size><html>true</html><multiline>true</multiline><css>[local.css]normal.css</css></Label>
+   <simpleButton name="btn_equip" label="Equiper"><Anchors><Anchor><AbsDimension x="644" y="574" /></Anchor></Anchors><Size><AbsDimension x="280" y="38" /></Size><Hooks><onRelease /></Hooks></simpleButton>
+  </Container>
+  <Label name="lbl_section_message"><Anchors><Anchor><AbsDimension x="180" y="290" /></Anchor></Anchors><Size><AbsDimension x="600" y="90" /></Size><css>[local.css]title.css</css><cssClass>whiteboldcenter</cssClass><multiline>true</multiline><visible>false</visible></Label>
+ </Container>
 </Definition>
