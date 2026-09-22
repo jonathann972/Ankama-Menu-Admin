@@ -264,7 +264,7 @@ package com.ankamagames.dofus
       }
    }
 
-   internal class AnomaliesUiRuntime
+   internal class LegacyAnomaliesUiRuntime
    {
       private static const TYPE:uint = 290;
       private static const CHANCE:uint = 3100;
