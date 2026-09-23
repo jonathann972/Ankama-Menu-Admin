@@ -71,6 +71,7 @@ namespace Giny.World.Managers.Items.Anomalies
         public void SynchronizeActiveMarker(Character character, bool notifyClient = false)
         {
             var activeUid = character.Record.ActiveAnomalyItemUid;
+            var clientInventoryChanged = false;
             foreach (var item in character.Inventory.GetItems())
             {
                 if (!HasDefinition(item.GId))
@@ -86,8 +87,17 @@ namespace Giny.World.Managers.Items.Anomalies
                     item.Effects.Add(new EffectInteger(ActiveAnomalyEffectId, 1));
                 item.UpdateLater();
                 if (notifyClient)
+                {
                     character.Inventory.OnItemModified(item);
+                    clientInventoryChanged = true;
+                }
             }
+
+            // Dofus 2.68 queues ObjectModified in Inventory.HookLock. The
+            // following InventoryWeightMessage releases that batch and makes
+            // InventoryHookList.ObjectModified observable by Berilia UIs.
+            if (clientInventoryChanged)
+                character.Inventory.RefreshWeight();
         }
 
         public bool Activate(Character character, int uid)

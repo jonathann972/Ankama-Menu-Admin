@@ -74,6 +74,34 @@ equiplabel {
     shadow-strength: 1;
 }
 
+equippedname {
+    font-family: Roboto;
+    font-size: 14px;
+    color: #F2F2F0;
+    font-weight: bold;
+    text-align: center;
+    shadow-distance: 2;
+    shadow-blurX: 2;
+    shadow-blurY: 2;
+    shadow-angle: 90;
+    shadow-color: #000000;
+    shadow-strength: 2;
+}
+
+equippedlevel {
+    font-family: Roboto;
+    font-size: 12px;
+    color: #DDD8CE;
+    font-weight: bold;
+    text-align: center;
+    shadow-distance: 2;
+    shadow-blurX: 2;
+    shadow-blurY: 2;
+    shadow-angle: 90;
+    shadow-color: #000000;
+    shadow-strength: 2;
+}
+
 emptyprompt {
     font-family: Roboto;
     font-size: 14px;
