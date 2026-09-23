@@ -58,8 +58,24 @@ package Ankama_Anomalies {
   }
   private function togglePanel(...args):void {
    var existing:Object=uiApi.getUi("anomaliesUi");
-   if(existing) uiApi.unloadUi("anomaliesUi");
-   else uiApi.loadUi("anomaliesUi","anomaliesUi");
+   if(existing) {
+    debugChat("[ANOM-DIAG] Fermeture du panneau anomaliesUi.");
+    uiApi.unloadUi("anomaliesUi");
+   } else {
+    var data:Object=getRegisteredPanel();
+    debugChat("[ANOM-DIAG] Ouverture. Classe declaree="+readProperty(data,"uiClass")+", fichier="+readProperty(data,"file"));
+    var loaded:Object=uiApi.loadUi("anomaliesUi","anomaliesUi");
+    debugChat("[ANOM-DIAG] loadUi retourne="+loaded);
+    setTimeout(reportLoadedController,500);
+   }
+  }
+  private function reportLoadedController():void {
+   var panel:Object=uiApi.getUi("anomaliesUi");
+   if(!panel) {
+    debugChat("[ANOM-DIAG] ECHEC : anomaliesUi introuvable 500 ms apres loadUi.");
+    return;
+   }
+   debugChat("[ANOM-DIAG] Panneau charge. uiClass="+readNestedProperty(panel,"uiData","uiClass")+", instance="+qualifiedName(readProperty(panel,"uiClass")));
   }
   private function getRegisteredPanel():Object {
    var managerClass:Object=getDefinitionByName("com.ankamagames.berilia.managers::UiModuleManager");

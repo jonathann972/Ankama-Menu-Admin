@@ -27,8 +27,9 @@ package Ankama_Anomalies.ui
 
   public function main(...args):void
   {
+   diagnostic("AnomaliesUi.main() exécuté");
    try { createCatalog(); bindComponents(); installHooks(); refreshInventory(); }
-   catch(error:Error) { sysApi.log(4,"[ANOMALIES] Initialisation : "+error.name+" - "+error.message); }
+   catch(error:Error) { diagnostic("ERREUR initialisation : "+error.name+" - "+error.message); }
   }
   private function createCatalog():void
   {
@@ -111,6 +112,12 @@ package Ankama_Anomalies.ui
   private function diagnostic(message:String):void
   {
    sysApi.log(2,"[ANOMALIES-INVENTORY] "+message);
+   try
+   {
+    var hooks:Object=getDefinitionByName("com.ankamagames.dofus.misc.lists::ChatHookList");
+    sysApi.dispatchHook(hooks.TextInformation,"[ANOMALIES-INVENTORY] "+message,666,0);
+   }
+   catch(ignore:Error) {}
   }
   private function isBetter(a:Object,b:Object):Boolean
   {
