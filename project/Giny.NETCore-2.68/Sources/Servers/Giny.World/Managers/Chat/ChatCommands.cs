@@ -426,17 +426,19 @@ namespace Giny.World.Managers.Chat
                 }
                 foreach (var item in anomalies)
                 {
-                    var chance = AnomalyRollManager.GetRoll(item, AnomalyRollManager.RepetitionChanceEffectId) / 10d;
-                    var power = AnomalyRollManager.GetRoll(item, AnomalyRollManager.RepeatedSpellPowerEffectId);
+                    var isRemanence = item.GId == AnomalyRollManager.RemanenceItemId;
+                    var chance = AnomalyRollManager.GetRoll(item, isRemanence ? AnomalyRollManager.RemanenceChanceEffectId : AnomalyRollManager.RepetitionChanceEffectId) / 10d;
+                    var value = AnomalyRollManager.GetRoll(item, isRemanence ? AnomalyRollManager.RemanenceStoredApEffectId : AnomalyRollManager.RepeatedSpellPowerEffectId);
                     var active = client.Character.Record.ActiveAnomalyItemUid == item.UId ? " [ACTIVE]" : string.Empty;
-                    client.Character.Reply($"UID {item.UId} - {item.Record.Name} - {chance:0.0}% / {power}%{active}");
+                    client.Character.Reply($"UID {item.UId} - {item.Record.Name} - {chance:0.0}% / {value}{(isRemanence ? " PA" : "%")}{active}");
                 }
                 return;
             }
 
             if (int.TryParse(action, out var uid) && AnomalyRollManager.Instance.Activate(client.Character, uid))
             {
-                client.Character.Reply($"Écho activé (UID {uid}).");
+                var active = AnomalyRollManager.Instance.GetActiveAnomaly(client.Character);
+                client.Character.Reply($"{active?.Record.Name ?? "Anomalie"} activée (UID {uid}).");
                 return;
             }
 

@@ -27,9 +27,12 @@ namespace Giny.World.Managers.Items.Anomalies
     public sealed class AnomalyRollManager : Singleton<AnomalyRollManager>
     {
         public const int EchoItemId = 32760;
+        public const int RemanenceItemId = 32761;
         public const short RepetitionChanceEffectId = 3100;
         public const short RepeatedSpellPowerEffectId = 3101;
         public const short ActiveAnomalyEffectId = 3102;
+        public const short RemanenceChanceEffectId = 3103;
+        public const short RemanenceStoredApEffectId = 3104;
 
         private readonly Random m_random = new Random();
         private readonly object m_randomLock = new object();
@@ -41,6 +44,12 @@ namespace Giny.World.Managers.Items.Anomalies
                 // Tenths preserve one decimal between 17.0% and 20.0%.
                 new AnomalyRollDefinition(RepetitionChanceEffectId, 170, 200),
                 new AnomalyRollDefinition(RepeatedSpellPowerEffectId, 40, 60),
+            },
+            [RemanenceItemId] = new[]
+            {
+                // Tenths preserve one decimal between 15.0% and 25.0%.
+                new AnomalyRollDefinition(RemanenceChanceEffectId, 150, 250),
+                new AnomalyRollDefinition(RemanenceStoredApEffectId, 1, 2),
             }
         };
 
@@ -126,9 +135,11 @@ namespace Giny.World.Managers.Items.Anomalies
 
         public static int EncodeFightResultRolls(CharacterItemRecord item)
         {
-            var chance = GetRoll(item, RepetitionChanceEffectId) & 0x1FF;
-            var power = GetRoll(item, RepeatedSpellPowerEffectId) & 0x7F;
-            return unchecked((int)0x40000000) | (chance << 7) | power;
+            var chanceEffect = item?.GId == RemanenceItemId ? RemanenceChanceEffectId : RepetitionChanceEffectId;
+            var valueEffect = item?.GId == RemanenceItemId ? RemanenceStoredApEffectId : RepeatedSpellPowerEffectId;
+            var chance = GetRoll(item, chanceEffect) & 0x1FF;
+            var value = GetRoll(item, valueEffect) & 0x7F;
+            return unchecked((int)0x40000000) | (chance << 7) | value;
         }
     }
 }

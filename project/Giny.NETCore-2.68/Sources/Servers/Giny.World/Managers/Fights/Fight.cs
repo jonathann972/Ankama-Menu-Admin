@@ -541,6 +541,12 @@ namespace Giny.World.Managers.Fights
 
             // Synchronize();
 
+            // Apply a carried Rémanence reserve before announcing the turn.
+            // Dofus initializes its local AP counter while processing this message;
+            // applying the bonus afterwards lets that initialization overwrite it.
+            if (this.FighterPlaying is CharacterFighter characterFighter)
+                characterFighter.ApplyRemanenceReserveBeforeTurnStart();
+
             this.Send(new GameFightTurnStartMessage(this.FighterPlaying.Id, Fight.TurnTime * 10));
 
             using (SequenceManager.StartSequence(SequenceTypeEnum.SEQUENCE_TURN_START))

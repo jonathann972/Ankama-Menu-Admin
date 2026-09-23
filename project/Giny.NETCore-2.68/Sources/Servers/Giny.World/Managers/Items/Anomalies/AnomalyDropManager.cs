@@ -10,12 +10,21 @@ namespace Giny.World.Managers.Items.Anomalies
         public static void ConfigureDevelopmentDrops()
         {
             var royalGobball = MonsterRecord.GetMonsterRecord(RoyalGobballMonsterId);
-            if (royalGobball == null || royalGobball.Drops.Any(x => x.ItemGId == AnomalyRollManager.EchoItemId))
+            if (royalGobball == null)
                 return;
 
-            royalGobball.Drops.Add(new MonsterDrop
+            AddDevelopmentDrop(royalGobball, AnomalyRollManager.EchoItemId);
+            AddDevelopmentDrop(royalGobball, AnomalyRollManager.RemanenceItemId);
+        }
+
+        private static void AddDevelopmentDrop(MonsterRecord monster, int itemGid)
+        {
+            if (monster.Drops.Any(x => x.ItemGId == itemGid))
+                return;
+
+            monster.Drops.Add(new MonsterDrop
             {
-                ItemGId = AnomalyRollManager.EchoItemId,
+                ItemGId = itemGid,
                 PercentDropForGrade1 = 100,
                 PercentDropForGrade2 = 100,
                 PercentDropForGrade3 = 100,

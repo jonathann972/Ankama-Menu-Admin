@@ -89,6 +89,8 @@ Les coordonnées ci-dessous sont celles du panneau `1086 × 672` dans `anomalies
 | Icône de l'anomalie | `x=274, y=199` | `64 × 64 px` | Centrée sur les limites opaques réelles de la zone centrale. |
 | `lbl_equipped_name` | `x=259, y=166` | `89 × 20 px` | Roboto 14 px, gras, centré, contour sombre. |
 | `lbl_equipped_level` | `x=248, y=280` | `110 × 18 px` | Roboto 12 px, gras, centré, contour sombre. |
+| Palier du slot II | `x=398, y=280` | `110 × 18 px` | Texte statique `Niv. 100`, même style et même alignement vertical. |
+| Palier du slot III | `x=548, y=280` | `110 × 18 px` | Texte statique `Niv. 200`, même style et même alignement vertical. |
 
 Le nom d'une anomalie équipée est limité à `10` caractères, espaces compris. Sa largeur réelle doit être contrôlée à l'exécution avec le `textWidth` du composant après application de la police. La zone autorisée mesure `89 px`. En cas de dépassement de la longueur ou de la largeur, émettre un diagnostic `[ANOM-EQUIP] nom hors limites` : ne jamais réduire la police et ne jamais tronquer silencieusement le texte.
 
@@ -160,3 +162,74 @@ démarrage → module → bouton → ouverture UI → contrôleur → inventaire
 ```
 
 Avant toute modification importante, relire ce document. Une architecture marquée comme ayant échoué ne doit pas être réintroduite sans justification explicite et nouveau protocole de restauration.
+
+## Rémanence — candidate de test (23 septembre 2026)
+
+Rémanence est la seconde définition du catalogue multi-anomalies. Cette version part exclusivement de la baseline Écho complète validée ; elle ne devient une nouvelle baseline qu'après validation en jeu.
+
+| Propriété | Valeur |
+|---|---|
+| GID | `32761` |
+| Type d'objet | `290` |
+| Marqueur actif partagé | `3102` |
+| Chance de rémanence | effet `3103`, valeur en dixièmes, `150..250` soit `15,0..25,0 %` |
+| PA conservés | effet `3104`, entier `1..2` |
+| Icône module | `Remanence_64x64.png`, `64 × 64 px`, non modifiée |
+| Catégorie | `Utilitaire` |
+| Niveau | `1` |
+
+Le marqueur `3102` reste générique : il représente uniquement l'objet anomalie dont l'UID correspond à `CharacterRecord.ActiveAnomalyItemUid`. Il ne contient aucune donnée propre à Écho ou Rémanence.
+
+Le catalogue du contrôleur Berilia associe désormais `GID → nom → niveau → rareté → catégorie → description → icône → deux effets → minima/maxima`. Le panneau de droite, les deux premiers slots de collection et le slot équipé sont rendus depuis la définition sélectionnée, sans branche spécifique au nom de l'anomalie.
+
+Dans la collection, l'icône d'une anomalie cataloguée reste affichée même lorsqu'elle n'est pas encore possédée. Le cadre `slot_locked` transparent est alors affiché par-dessus l'icône ; il est remplacé par `slot_unlocked` dès que l'objet réel est détecté dans l'inventaire. Le verrouillage fonctionnel reste déterminé exclusivement par l'inventaire.
+
+Règles gameplay de Rémanence :
+
+- à la fin du tour, ne tenter le jet que si l'objet `32761` est réellement actif et s'il reste des PA éligibles ;
+- réserver `min(PA restants éligibles, jet 3104, 2)` en cas de succès ;
+- appliquer puis vider la réserve au début du tour suivant ;
+- soustraire du calcul de fin de tour les PA accordés par Rémanence durant ce tour afin d'interdire leur recyclage ;
+- annuler une réserve en attente si Rémanence a été déséquipée avant son application ;
+- la répétition de sort d'Écho vérifie explicitement le GID `32760`, afin qu'elle ne s'exécute jamais pour Rémanence.
+
+Les données client sont intégrées de façon reproductible par `project/tools/RemanenceIntegrator` : clonage structurel de l'objet Écho vers le GID `32761`, nouveaux textes D2I et ajout de l'icône `32761.png` dans `bitmap0_1.d2p`. L'objet est ensuite importé individuellement dans la table serveur avec `Giny.DatabaseSynchronizer --item 32761 --client <Dofus>`.
+
+Diagnostics gameplay attendus :
+
+```text
+[ANOM-REMANENCE] roll uid=<UID> <tirage> / <chance> -> PROC; pa_restants=<N>; capacité=<1|2>
+[ANOM-REMANENCE] réserve créée uid=<UID> pa=<1|2>
+[ANOM-REMANENCE] réserve appliquée uid=<UID> pa=<1|2>
+```
+
+En cas d'échec :
+
+```text
+[ANOM-REMANENCE] roll uid=<UID> <tirage> / <chance> -> FAIL; pa_restants=<N>; capacité=<1|2>
+```
+
+Baseline utilisée pour cette candidate : client `3A8602C8963EFC645456BECFDD557E32E0B5324CAD11714CD7504ECF1705AEC1` et serveur `842FA006486B004FF0480090E784A36A0BACE70A6D0E95C4AD9F21E0B0BC9FA4`.
+
+### Piège PA identifié pendant le test Rémanence
+
+`Fighter.GainAp()`/`FighterStats.GainAp()` est un mécanisme de remboursement : il augmente `Context`, mais diminue également `Used`. Pour une réserve appliquée au début du tour, ce comportement produit côté client un état équivalent à `total=base+2, used=2`, donc le compteur disponible reste visuellement à sa valeur normale. Les logs serveur peuvent malgré cela indiquer que la réserve a été appliquée.
+
+Rémanence doit augmenter directement `Stats.ActionPoints.Context`, conserver `Used=0` en début de tour, puis envoyer `GameActionFightPointsVariationMessage`. Le diagnostic d'application doit inclure `total_avant`, `total_après` et `used`; pour un bonus de 2 attendu : `9 → 11`, `used=0`.
+
+Le même bonus `Context` doit impérativement être soustrait dans `StoreRemanenceReserve()` avant le `ResetUsedPoints()` normal de fin de tour. Sans ce retrait, le bonus devient permanent et se cumule avec les tours suivants. Le calcul des PA encore éligibles est effectué avant ce retrait sous la forme `TotalInContext - grantedThisTurn`, ce qui empêche aussi le recyclage des PA accordés.
+
+L'ordre réseau est également déterminant : la réserve doit être appliquée dans `Fight.OnTurnStarted()` **avant** l'envoi de `GameFightTurnStartMessage`. Dofus initialise son compteur local de PA pendant le traitement de ce message. Une application ultérieure dans `CharacterFighter.OnTurnBegin()` peut être calculée correctement côté serveur (`9 → 11`, `used=0`) tout en restant affichée à 9 côté client.
+
+L'affichage de Rémanence dans la barre des passifs n'est pas inclus dans la baseline validée. Les essais avec un simple `GameActionFightDispellableEffectMessage`, puis avec un buff d'affichage synthétique, n'ont produit aucun passif visible dans Dofus 2.68. Cette piste expérimentale a été retirée afin de ne pas modifier l'architecture générique des buffs pour une fonctionnalité non validée. Un futur affichage custom devra être conçu et testé comme une couche indépendante ; il ne devra pas modifier le calcul de PA validé.
+
+## Baseline Écho + Rémanence validée en jeu
+
+Validation du 23 septembre 2026 : détection et sélection des deux anomalies, collection multi-anomalies, équipement générique, remplacement de l'anomalie active, Rémanence en combat, bonus visible `9 → 11`, retrait au tour suivant `11 → 9`, absence de recyclage et comportement d'Écho préservé.
+
+| Binaire | SHA256 | Sauvegarde officielle |
+|---|---|---|
+| Client `DofusInvoker.swf` | `F8A7188630C6913A49C361A331C13B197579EC7BD3329C612001E929329B244F` | `DofusInvoker.baseline-echo-remanence-validated-20260923.bak.swf` |
+| Serveur `Giny.World.dll` | `3C14B08854B14416AA0049086616F88B61C9638CDBC7D18B12298DCDB8866250` | `Giny.World.baseline-echo-remanence-validated-20260923.bak.dll` |
+
+Cette baseline devient le point de restauration officiel. Le passif visuel Rémanence reste explicitement hors périmètre et sera étudié comme UI custom séparée.

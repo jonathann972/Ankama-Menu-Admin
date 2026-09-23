@@ -53,6 +53,15 @@ source → compilation → déploiement → chargement → instanciation → ex�
 
 **Une seule couche doit être modifiée/testée à la fois.**
 
+## Baseline Écho + Rémanence validée
+
+Le point de retour officiel est désormais :
+
+- `DofusInvoker.baseline-echo-remanence-validated-20260923.bak.swf` — `F8A7188630C6913A49C361A331C13B197579EC7BD3329C612001E929329B244F` ;
+- `Giny.World.baseline-echo-remanence-validated-20260923.bak.dll` — `3C14B08854B14416AA0049086616F88B61C9638CDBC7D18B12298DCDB8866250`.
+
+Les fichiers de données client ont leurs sauvegardes antérieures voisines suffixées `.before-remanence-20260923.bak`. Ne les restaurer que pour revenir volontairement à une version sans Rémanence ; restaurer alors ensemble `Items.d2o`, `i18n_fr.d2i` et `bitmap0_1.d2p`.
+
 Ordre de validation :
 
 ```text

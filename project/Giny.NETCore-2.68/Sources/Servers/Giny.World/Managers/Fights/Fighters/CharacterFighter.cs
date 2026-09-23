@@ -40,6 +40,8 @@ namespace Giny.World.Managers.Fights.Fighters
     public class CharacterFighter : Fighter
     {
         private bool m_echoAttemptedThisTurn;
+        private short m_remanenceReservedAp;
+        private short m_remanenceGrantedThisTurn;
         public event Action<CharacterFighter> OnCloseCombat;
 
         public Character Character
@@ -276,7 +278,7 @@ namespace Giny.World.Managers.Fights.Fighters
         private bool CastSpellWithEcho(SpellCast cast)
         {
             var anomaly = AnomalyRollManager.Instance.GetActiveAnomaly(Character);
-            if (anomaly == null || m_echoAttemptedThisTurn || cast.Force)
+            if (anomaly == null || anomaly.GId != AnomalyRollManager.EchoItemId || m_echoAttemptedThisTurn || cast.Force)
                 return base.CastSpell(cast);
 
             var damagesByTarget = new Dictionary<Fighter, int>();
@@ -561,12 +563,80 @@ namespace Giny.World.Managers.Fights.Fighters
         }
         public override void OnTurnEnded()
         {
+            StoreRemanenceReserve();
             SummonedFighter summon = GetNextControlableSummon(1);
 
             if (summon != null)
             {
                 summon.SwitchContext();
             }
+        }
+
+        public void ApplyRemanenceReserveBeforeTurnStart()
+        {
+            var reserved = m_remanenceReservedAp;
+            m_remanenceReservedAp = 0;
+            m_remanenceGrantedThisTurn = 0;
+            if (reserved <= 0)
+                return;
+
+            var anomaly = AnomalyRollManager.Instance.GetActiveAnomaly(Character);
+            if (anomaly == null || anomaly.GId != AnomalyRollManager.RemanenceItemId)
+            {
+                Logger.Write($"[ANOM-REMANENCE] reserve annulée uid={anomaly?.UId ?? 0} pa={reserved} raison=inactive", Channels.Info);
+                return;
+            }
+
+            var granted = Math.Min((short)2, reserved);
+            m_remanenceGrantedThisTurn = granted;
+            var before = Stats.ActionPoints.TotalInContext();
+            // A start-of-turn carry-over increases the available AP pool. GainAp()
+            // is a refund helper: it also makes Used negative, which Dofus then
+            // interprets as AP already spent and visually cancels the bonus.
+            Stats.ActionPoints.Context += granted;
+            Fight.Send(new GameActionFightPointsVariationMessage
+            {
+                actionId = (short)ActionsEnum.ACTION_CHARACTER_ACTION_POINTS_WIN,
+                delta = granted,
+                sourceId = Id,
+                targetId = Id,
+            });
+            Logger.Write($"[ANOM-REMANENCE] réserve appliquée uid={anomaly.UId} pa={granted} total_avant={before} total_après={Stats.ActionPoints.TotalInContext()} used={Stats.ActionPoints.Used}", Channels.Info);
+        }
+
+        private void StoreRemanenceReserve()
+        {
+            var anomaly = AnomalyRollManager.Instance.GetActiveAnomaly(Character);
+            if (anomaly == null || anomaly.GId != AnomalyRollManager.RemanenceItemId)
+            {
+                m_remanenceReservedAp = 0;
+                m_remanenceGrantedThisTurn = 0;
+                return;
+            }
+
+            // Granted AP are excluded from the eligible remainder, even if unused,
+            // then removed before the normal end-of-turn ResetUsedPoints restores
+            // the character's base pool. This makes the bonus last exactly one turn.
+            var grantedThisTurn = m_remanenceGrantedThisTurn;
+            var remainingAp = Math.Max(0, Stats.ActionPoints.TotalInContext() - grantedThisTurn);
+            if (grantedThisTurn > 0)
+                Stats.ActionPoints.Context -= grantedThisTurn;
+            m_remanenceGrantedThisTurn = 0;
+            if (remainingAp <= 0)
+            {
+                m_remanenceReservedAp = 0;
+                Logger.Write($"[ANOM-REMANENCE] aucun PA éligible uid={anomaly.UId}", Channels.Info);
+                return;
+            }
+
+            var chance = AnomalyRollManager.GetRoll(anomaly, AnomalyRollManager.RemanenceChanceEffectId) / 10d;
+            var capacity = Math.Clamp(AnomalyRollManager.GetRoll(anomaly, AnomalyRollManager.RemanenceStoredApEffectId), 1, 2);
+            var roll = Random.NextDouble() * 100d;
+            var proc = roll < chance;
+            Logger.Write($"[ANOM-REMANENCE] roll uid={anomaly.UId} {roll.ToString("0.00", CultureInfo.InvariantCulture)} / {chance.ToString("0.00", CultureInfo.InvariantCulture)} -> {(proc ? "PROC" : "FAIL")}; pa_restants={remainingAp}; capacité={capacity}", Channels.Info);
+            m_remanenceReservedAp = proc ? (short)Math.Min(2, Math.Min(remainingAp, capacity)) : (short)0;
+            if (proc)
+                Logger.Write($"[ANOM-REMANENCE] réserve créée uid={anomaly.UId} pa={m_remanenceReservedAp}", Channels.Info);
         }
 
         public override FightTeamMemberInformations GetFightTeamMemberInformations()
