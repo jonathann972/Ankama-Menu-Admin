@@ -1,321 +1,149 @@
 package Ankama_Anomalies.ui
 {
-   import flash.utils.getDefinitionByName;
-   
-   public class AnomaliesUi
-   {
-      
-      private static const TYPE:uint = 290;
-      
-      private static const CHANCE:uint = 3100;
-      
-      private static const POWER:uint = 3101;
-      
-      private static const ACTIVE:uint = 3102;
-      
-      [Api(name="SystemApi")]
-      public var sysApi:Object;
-      
-      [Api(name="UiApi")]
-      public var uiApi:Object;
-      
-      [Api(name="InventoryApi")]
-      public var inventoryApi:Object;
-      
-      public var mainCtr:Object;
-      
-      public var tx_background:Object;
-      
-      public var lbl_smoke_title:Object;
-      
-      public var lbl_smoke_body:Object;
-      
-      public var ctr_tab_active:Object;
-      
-      public var ctr_anomalies_content:Object;
-      
-      public var lbl_section_message:Object;
-      
-      public var btn_tab_anomalies:Object;
-      
-      public var btn_tab_fusion:Object;
-      
-      public var btn_tab_catalogue:Object;
-      
-      public var btn_tab_effects:Object;
-      
-      public var btn_tab_history:Object;
-      
-      public var btn_tab_guide:Object;
-      
-      public var gd_anomalies:Object;
-      
-      public var inp_search:Object;
-      
-      public var slot_selected:Object;
-      
-      public var slot_equipped:Object;
-      
-      public var btn_equip:Object;
-      
-      public var btn_close:Object;
-      
-      public var lbl_empty:Object;
-      
-      public var lbl_name:Object;
-      
-      public var lbl_rarity:Object;
-      
-      public var lbl_level:Object;
-      
-      public var lbl_rolls:Object;
-      
-      public var lbl_lore:Object;
-      
-      public var lbl_effect:Object;
-      
-      public var lbl_btn_equip:Object;
-      
-      private var all:Array = [];
-      
-      private var selected:Object;
-      
-      private var active:Object;
-      
-      public function AnomaliesUi()
-      {
-         super();
-      }
-      
-      public function main(... rest) : void
-      {
-         var args:Array = rest;
-         this.debugChat("[ANOM-TRACE 10] ENTER AnomaliesUi.main");
-         this.debugChat("[ANOMALIES-UI] Classe UI initialisee.");
-         if(this.lbl_smoke_title)
-         {
-            if(this.btn_close)
-            {
-               this.uiApi.addComponentHook(this.btn_close,"onRelease");
-            }
-            this.debugChat("[ANOMALIES-UI] Smoke UI main() termine avec succes.");
-            return;
-         }
-         try
-         {
-            this.debugChat("[ANOMALIES-UI] Composants grid=" + this.gd_anomalies + ", search=" + this.inp_search + ", equip=" + this.btn_equip + ", close=" + this.btn_close);
-            this.uiApi.addComponentHook(this.gd_anomalies,"onSelectItem");
-            this.uiApi.addComponentHook(this.gd_anomalies,"onItemRollOver");
-            this.uiApi.addComponentHook(this.gd_anomalies,"onItemRollOut");
-            this.uiApi.addComponentHook(this.btn_equip,"onRelease");
-            this.uiApi.addComponentHook(this.btn_close,"onRelease");
-            this.uiApi.addComponentHook(this.btn_tab_anomalies,"onRelease");
-            this.uiApi.addComponentHook(this.btn_tab_fusion,"onRelease");
-            this.uiApi.addComponentHook(this.btn_tab_catalogue,"onRelease");
-            this.uiApi.addComponentHook(this.btn_tab_effects,"onRelease");
-            this.uiApi.addComponentHook(this.btn_tab_history,"onRelease");
-            this.uiApi.addComponentHook(this.btn_tab_guide,"onRelease");
-            this.debugChat("[ANOMALIES-UI] Hooks installes.");
-            this.refresh();
-            this.debugChat("[ANOMALIES-UI] Donnees affichees.");
-         }
-         catch(error:Error)
-         {
-            debugChat("[ANOMALIES-UI] ERREUR INIT : " + error.name + " - " + error.message);
-         }
-      }
-      
-      private function debugChat(param1:String) : void
-      {
-         var hooks:Object = null;
-         var message:String = param1;
-         try
-         {
-            hooks = getDefinitionByName("com.ankamagames.dofus.misc.lists::ChatHookList");
-            this.sysApi.dispatchHook(hooks.TextInformation,message,666,0);
-         }
-         catch(ignore:Error)
-         {
-            sysApi.log(4,message);
-         }
-      }
-      
-      private function refresh() : void
-      {
-         var _loc1_:Object = null;
-         this.all = this.inventoryApi.getStorageObjectsByType(TYPE);
-         if(!this.all)
-         {
-            this.all = [];
-         }
-         this.active = null;
-         for each(_loc1_ in this.all)
-         {
-            if(this.fx(_loc1_,ACTIVE) > 0)
-            {
-               this.active = _loc1_;
-            }
-         }
-         this.filter();
-         if(this.slot_equipped)
-         {
-            this.slot_equipped.data = this.active;
-         }
-         this.lbl_empty.visible = this.all.length == 0;
-         if(!this.selected && Boolean(this.all.length))
-         {
-            this.selected = this.all[0];
-         }
-         this.details();
-      }
-      
-      private function filter() : void
-      {
-         var _loc2_:Object = null;
-         var _loc1_:Array = [];
-         var _loc3_:String = Boolean(this.inp_search) && Boolean(this.inp_search.text) ? this.inp_search.text.toLowerCase() : "";
-         for each(_loc2_ in this.all)
-         {
-            if(!_loc3_.length || _loc2_.name.toLowerCase().indexOf(_loc3_) >= 0)
-            {
-               _loc1_.push(_loc2_);
-            }
-         }
-         this.gd_anomalies.dataProvider = _loc1_;
-      }
-      
-      private function fx(param1:Object, param2:uint) : int
-      {
-         var _loc3_:Object = null;
-         if(!param1 || !param1.effects)
-         {
-            return 0;
-         }
-         for each(_loc3_ in param1.effects)
-         {
-            if(_loc3_.effectId == param2)
-            {
-               return int(_loc3_.value);
-            }
-         }
-         return 0;
-      }
-      
-      private function details() : void
-      {
-         this.slot_selected.data = this.selected;
-         if(!this.selected)
-         {
-            this.lbl_name.text = "Sélectionnez une Anomalie";
-            this.btn_equip.disabled = true;
-            return;
-         }
-         var _loc1_:Number = this.fx(this.selected,CHANCE) / 10;
-         var _loc2_:int = this.fx(this.selected,POWER);
-         var _loc3_:String = _loc1_.toFixed(1).replace(".",",");
-         var _loc4_:Boolean = Boolean(this.active) && this.active.objectUID == this.selected.objectUID;
-         this.lbl_name.text = "<font color=\'#D65CFF\'><b>Écho</b></font>";
-         this.lbl_rarity.text = "<font color=\'#D65CFF\'>Épique</font>";
-         this.lbl_level.text = "Niveau " + this.selected.level;
-         this.lbl_rolls.text = "<font color=\'#E8C34A\'><b>Jets de l\'Anomalie</b></font><br/><br/>Chance de répétition : <font color=\'#67D65C\'><b>" + _loc3_ + " %</b></font> <font color=\'#929292\'>(17-20 %)</font><br/>Puissance de l\'Écho : <font color=\'#67D65C\'><b>" + _loc2_ + " %</b></font> <font color=\'#929292\'>(40-60 %)</font>";
-         this.lbl_lore.text = "<i><font color=\'#A8A8A8\'>Une résonance violette venue d\'ailleurs.<br/>Le Wakfu semble se souvenir de ce que vous avez déjà fait.</font></i>";
-         this.lbl_effect.text = "<font color=\'#E8C34A\'><b>Effet actuel</b></font><br/><br/>Le premier sort offensif éligible lancé chaque tour possède <font color=\'#67D65C\'><b>" + _loc3_ + " %</b></font> de chance de produire un Écho à <font color=\'#67D65C\'><b>" + _loc2_ + " %</b></font> de sa puissance.";
-         this.btn_equip.label = _loc4_ ? "Déséquiper" : "Équiper";
-         this.btn_equip.disabled = false;
-      }
-      
-      private function sendCommand(param1:String) : void
-      {
-         var _loc2_:Object = getDefinitionByName("com.ankamagames.dofus.logic.game.common.actions.chat.ChatTextOutputAction");
-         this.sysApi.sendAction(_loc2_.create(param1));
-      }
-      
-      public function onSelectItem(param1:Object, param2:uint, param3:Boolean) : void
-      {
-         if(param1.selectedItem)
-         {
-            this.selected = param1.selectedItem;
-            this.details();
-         }
-      }
-      
-      public function onItemRollOver(param1:Object, param2:Object) : void
-      {
-         if(Boolean(param2) && Boolean(param2.data))
-         {
-            this.uiApi.showTooltip(param2.data,param2.container,false,"standard",7,1,3,"itemName",null,{"showEffects":true});
-         }
-      }
-      
-      public function onItemRollOut(param1:Object, param2:Object) : void
-      {
-         this.uiApi.hideTooltip();
-      }
-      
-      public function onTextChange(param1:Object) : void
-      {
-         this.filter();
-      }
-      
-      private function showSection(param1:int, param2:String) : void
-      {
-         this.ctr_tab_active.y = 101 + param1 * 56;
-         this.ctr_anomalies_content.visible = param1 == 0;
-         this.lbl_section_message.visible = param1 != 0;
-         if(param1 != 0)
-         {
-            this.lbl_section_message.text = param2 + "\nCette section sera disponible dans une prochaine version.";
-         }
-      }
-      
-      public function onRelease(param1:Object) : void
-      {
-         if(param1 == this.btn_close)
-         {
-            this.uiApi.unloadUi("anomaliesUi");
-            return;
-         }
-         if(param1 == this.btn_tab_anomalies)
-         {
-            this.showSection(0,"");
-            return;
-         }
-         if(param1 == this.btn_tab_fusion)
-         {
-            this.showSection(1,"Fusion");
-            return;
-         }
-         if(param1 == this.btn_tab_catalogue)
-         {
-            this.showSection(2,"Catalogue");
-            return;
-         }
-         if(param1 == this.btn_tab_effects)
-         {
-            this.showSection(3,"Effets");
-            return;
-         }
-         if(param1 == this.btn_tab_history)
-         {
-            this.showSection(4,"Historique");
-            return;
-         }
-         if(param1 == this.btn_tab_guide)
-         {
-            this.showSection(5,"Guide");
-            return;
-         }
-         if(param1 == this.btn_equip && Boolean(this.selected))
-         {
-            this.sendCommand(Boolean(this.active) && this.active.objectUID == this.selected.objectUID ? "/anomaly off" : "/anomaly " + this.selected.objectUID);
-            this.active = Boolean(this.active) && this.active.objectUID == this.selected.objectUID ? null : this.selected;
-            if(this.slot_equipped)
-            {
-               this.slot_equipped.data = this.active;
-            }
-            this.details();
-         }
-      }
-   }
-}
+ import flash.utils.getDefinitionByName;
+ public class AnomaliesUi
+ {
+  private static const TYPE:uint=290, CHANCE:uint=3100, POWER:uint=3101, ACTIVE:uint=3102;
+  private static const PAGE_SIZE:int=10;
+  [Api(name="SystemApi")] public var sysApi:Object;
+  [Api(name="UiApi")] public var uiApi:Object;
+  [Api(name="InventoryApi")] public var inventoryApi:Object;
+  public var mainCtr:Object,btn_close:Object,btn_equip:Object,btn_collection_prev:Object,btn_collection_next:Object;
+  public var lbl_btn_equip:Object,lbl_collection:Object,lbl_collection_page:Object;
+  public var tx_equipped_empty:Object,tx_equipped_active:Object,tx_equipped_icon:Object,tx_detail_icon:Object;
+  public var lbl_detail_name:Object,lbl_detail_rarity:Object,lbl_detail_level:Object,lbl_detail_description:Object;
+  public var lbl_detail_chance:Object,lbl_detail_chance_max:Object,lbl_detail_power:Object,lbl_detail_power_max:Object;
+  public var lbl_detail_category:Object,lbl_detail_source:Object,lbl_detail_date:Object;
+  public var tx_collection_locked_0:Object,tx_collection_locked_1:Object,tx_collection_locked_2:Object,tx_collection_locked_3:Object,tx_collection_locked_4:Object;
+  public var tx_collection_locked_5:Object,tx_collection_locked_6:Object,tx_collection_locked_7:Object,tx_collection_locked_8:Object,tx_collection_locked_9:Object;
+  public var tx_collection_unlocked_0:Object,tx_collection_unlocked_1:Object,tx_collection_unlocked_2:Object,tx_collection_unlocked_3:Object,tx_collection_unlocked_4:Object;
+  public var tx_collection_unlocked_5:Object,tx_collection_unlocked_6:Object,tx_collection_unlocked_7:Object,tx_collection_unlocked_8:Object,tx_collection_unlocked_9:Object;
+  public var tx_collection_icon_0:Object,tx_collection_icon_1:Object,tx_collection_icon_2:Object,tx_collection_icon_3:Object,tx_collection_icon_4:Object;
+  public var tx_collection_icon_5:Object,tx_collection_icon_6:Object,tx_collection_icon_7:Object,tx_collection_icon_8:Object,tx_collection_icon_9:Object;
+  public var btn_collection_0:Object,btn_collection_1:Object,btn_collection_2:Object,btn_collection_3:Object,btn_collection_4:Object;
+  public var btn_collection_5:Object,btn_collection_6:Object,btn_collection_7:Object,btn_collection_8:Object,btn_collection_9:Object;
+  private var catalog:Array,best:Object={},activeItem:Object,selectedDef:Object,selectedItem:Object,page:int=0;
+  private var locked:Array,unlocked:Array,icons:Array,buttons:Array;
 
+  public function main(...args):void
+  {
+   try { createCatalog(); bindComponents(); installHooks(); refreshInventory(); }
+   catch(error:Error) { sysApi.log(4,"[ANOMALIES] Initialisation : "+error.name+" - "+error.message); }
+  }
+  private function createCatalog():void
+  {
+   var root:String=String(sysApi.getConfigEntry("config.mod.path"))+"Ankama_Anomalies/assets/";
+   catalog=[{gid:32760,name:"Écho",rarity:"ANOMALIE ÉPIQUE",level:1,
+    description:"« Le premier sort offensif éligible lancé durant le tour peut être répété avec une puissance réduite. »",
+    category:"Offensive",source:"Donjon X",icon:root+"echo-64.png",chanceMin:170,chanceMax:200,powerMin:40,powerMax:60}];
+   selectedDef=catalog.length?catalog[0]:null;
+  }
+  private function bindComponents():void
+  {
+   locked=[tx_collection_locked_0,tx_collection_locked_1,tx_collection_locked_2,tx_collection_locked_3,tx_collection_locked_4,tx_collection_locked_5,tx_collection_locked_6,tx_collection_locked_7,tx_collection_locked_8,tx_collection_locked_9];
+   unlocked=[tx_collection_unlocked_0,tx_collection_unlocked_1,tx_collection_unlocked_2,tx_collection_unlocked_3,tx_collection_unlocked_4,tx_collection_unlocked_5,tx_collection_unlocked_6,tx_collection_unlocked_7,tx_collection_unlocked_8,tx_collection_unlocked_9];
+   icons=[tx_collection_icon_0,tx_collection_icon_1,tx_collection_icon_2,tx_collection_icon_3,tx_collection_icon_4,tx_collection_icon_5,tx_collection_icon_6,tx_collection_icon_7,tx_collection_icon_8,tx_collection_icon_9];
+   buttons=[btn_collection_0,btn_collection_1,btn_collection_2,btn_collection_3,btn_collection_4,btn_collection_5,btn_collection_6,btn_collection_7,btn_collection_8,btn_collection_9];
+  }
+  private function installHooks():void
+  {
+   var b:Object;
+   uiApi.addComponentHook(btn_close,"onRelease"); uiApi.addComponentHook(btn_equip,"onRelease");
+   uiApi.addComponentHook(btn_collection_prev,"onRelease"); uiApi.addComponentHook(btn_collection_next,"onRelease");
+   for each(b in buttons) uiApi.addComponentHook(b,"onRelease");
+   var h:Object=getDefinitionByName("com.ankamagames.dofus.misc.lists::InventoryHookList");
+   sysApi.addHook(h.ObjectAdded,refreshInventory); sysApi.addHook(h.ObjectDeleted,refreshInventory);
+   sysApi.addHook(h.ObjectModified,refreshInventory); sysApi.addHook(h.InventoryContent,refreshInventory);
+  }
+  private function refreshInventory(...args):void
+  {
+   var item:Object,current:Object,items:Array=inventoryApi.getStorageObjectsByType(TYPE);
+   best={}; activeItem=null; if(!items) items=[];
+   for each(item in items)
+   {
+    current=best[item.objectGID];
+    if(!current||isBetter(item,current)) best[item.objectGID]=item;
+    if(effect(item,ACTIVE)>0) activeItem=item;
+   }
+   selectedItem=selectedDef?best[selectedDef.gid]:null; renderAll();
+  }
+  private function isBetter(a:Object,b:Object):Boolean
+  {
+   var d:Object=definition(a.objectGID); if(!d) return false;
+   var sa:Number=score(a,d),sb:Number=score(b,d);
+   return sa==sb?uint(a.objectUID)<uint(b.objectUID):sa>sb;
+  }
+  private function score(item:Object,d:Object):Number
+  {
+   return (effect(item,CHANCE)-d.chanceMin)/(d.chanceMax-d.chanceMin)+(effect(item,POWER)-d.powerMin)/(d.powerMax-d.powerMin);
+  }
+  private function effect(item:Object,id:uint):int
+  {
+   var e:Object; if(!item||!item.effects) return 0;
+   for each(e in item.effects) if(uint(e.effectId)==id) return int(e.value);
+   return 0;
+  }
+  private function definition(gid:uint):Object
+  {
+   var d:Object; for each(d in catalog) if(uint(d.gid)==gid) return d; return null;
+  }
+  private function renderAll():void { renderCollection(); renderDetails(); renderEquipped(); }
+  private function renderCollection():void
+  {
+   var owned:int=0,v:Object,i:int,ci:int,d:Object,item:Object;
+   for each(v in best) ++owned;
+   lbl_collection.text="Collection "+owned+"/"+catalog.length;
+   var pages:int=Math.max(1,Math.ceil(catalog.length/PAGE_SIZE)); if(page>=pages) page=pages-1;
+   lbl_collection_page.text=(page+1)+" / "+pages;
+   for(i=0;i<PAGE_SIZE;++i)
+   {
+    ci=page*PAGE_SIZE+i; d=ci<catalog.length?catalog[ci]:null; item=d?best[d.gid]:null;
+    locked[i].visible=!item; unlocked[i].visible=Boolean(item); icons[i].visible=Boolean(item); buttons[i].disabled=!d;
+    if(item) icons[i].uri=uiApi.createUri(d.icon);
+   }
+  }
+  private function renderDetails():void
+  {
+   var d:Object=selectedDef,item:Object=selectedItem; if(!d) return;
+   tx_detail_icon.uri=uiApi.createUri(d.icon); lbl_detail_name.text=d.name; lbl_detail_rarity.text=d.rarity;
+   lbl_detail_level.text="Niveau "+d.level; lbl_detail_description.text=d.description;
+   lbl_detail_category.text=d.category; lbl_detail_source.text=d.source; lbl_detail_date.text="—";
+   lbl_detail_chance_max.text="/ "+tenths(d.chanceMax)+" %"; lbl_detail_power_max.text="/ "+d.powerMax+" %";
+   lbl_detail_chance.text=item?tenths(effect(item,CHANCE))+" %":"—"; lbl_detail_power.text=item?effect(item,POWER)+" %":"—";
+   var isActive:Boolean=Boolean(item)&&Boolean(activeItem)&&uint(item.objectUID)==uint(activeItem.objectUID);
+   lbl_btn_equip.text=isActive?"DÉSÉQUIPER":"ÉQUIPER"; btn_equip.disabled=!item;
+  }
+  private function renderEquipped():void
+  {
+   var d:Object=activeItem?definition(activeItem.objectGID):null;
+   tx_equipped_empty.visible=!activeItem; tx_equipped_active.visible=Boolean(activeItem);
+   tx_equipped_icon.visible=Boolean(activeItem)&&Boolean(d); if(d) tx_equipped_icon.uri=uiApi.createUri(d.icon);
+  }
+  private function tenths(v:int):String { return (v/10).toFixed(1).replace(".",","); }
+  private function sendCommand(command:String):void
+  {
+   var action:Object=getDefinitionByName("com.ankamagames.dofus.logic.game.common.actions.chat.ChatTextOutputAction");
+   sysApi.sendAction(action.create(command));
+  }
+  public function onRelease(target:Object):void
+  {
+   var i:int,pages:int;
+   if(target==btn_close) { uiApi.unloadUi("anomaliesUi"); return; }
+   if(target==btn_equip&&selectedItem)
+   {
+    sendCommand(activeItem&&uint(activeItem.objectUID)==uint(selectedItem.objectUID)?"/anomaly off":"/anomaly "+selectedItem.objectUID); return;
+   }
+   if(target==btn_collection_prev||target==btn_collection_next)
+   {
+    pages=Math.max(1,Math.ceil(catalog.length/PAGE_SIZE));
+    page=target==btn_collection_prev?(page+pages-1)%pages:(page+1)%pages; renderCollection(); return;
+   }
+   for(i=0;i<buttons.length;++i) if(target==buttons[i]) { selectIndex(page*PAGE_SIZE+i); return; }
+  }
+  private function selectIndex(index:int):void
+  {
+   if(index<0||index>=catalog.length) return;
+   selectedDef=catalog[index]; selectedItem=best[selectedDef.gid]; renderDetails();
+  }
+ }
+}

@@ -57,43 +57,9 @@ package Ankama_Anomalies {
    }
   }
   private function togglePanel(...args):void {
-   try {
-    debugChat("[ANOM-TRACE 01] ENTER togglePanel");
-    var existing:Object=uiApi.getUi("anomaliesUi");
-    debugChat("[ANOM-TRACE 02] existing="+existing);
-    debugChat("[ANOM-TRACE 03] existing.stage="+(existing ? existing.stage : null));
-    debugChat("[ANOM-TRACE 04] existing.parent="+(existing ? existing.parent : null));
-    if(existing){
-     debugChat("[ANOM-TRACE 05] UI EXISTANTE -> fermeture forcee");
-     uiApi.unloadUi("anomaliesUi");
-    }
-    debugChat("[ANOM-TRACE 06] afterUnload="+uiApi.getUi("anomaliesUi"));
-    var managerClass:Object=getDefinitionByName("com.ankamagames.berilia.managers::UiModuleManager");
-    var module:Object=managerClass.getInstance().getModule("Ankama_Anomalies");
-    var registeredUiData:Object=module ? module.uis["anomaliesUi"] : null;
-    var diagUiData:Object=module ? module.uis["anomaliesUi_DIAG_001"] : null;
-    debugChat("[ANOM-BIND] module.uis[anomaliesUi]="+registeredUiData);
-    debugChat("[ANOM-BIND] module.uis[anomaliesUi_DIAG_001]="+diagUiData);
-    debugChat("[ANOM-BIND] source.uiClass="+readProperty(registeredUiData,"uiClass")+", qualified="+qualifiedName(readProperty(registeredUiData,"uiClass")));
-    debugChat("[ANOM-BIND] DIAG.uiClass="+readProperty(diagUiData,"uiClass")+", qualified="+qualifiedName(readProperty(diagUiData,"uiClass")));
-    var definition:Object=getDefinitionByName("Ankama_Anomalies.ui::AnomaliesUi");
-    var classDescription:XML=describeType(definition);
-    var mainPresent:Boolean=classDescription..method.(@name=="main").length()>0;
-    debugChat("[ANOM-CLASS] definition="+definition+", qualified="+qualifiedName(definition));
-    debugChat("[ANOM-CLASS] main present="+mainPresent);
-    // loadUi resout son premier argument (anomaliesUi), pas le nom d'instance DIAG.
-    // Le binding force ici est volontairement temporaire pour isoler la regression.
-    if(registeredUiData) registeredUiData.uiClass=definition as Class;
-    if(diagUiData) diagUiData.uiClass=definition as Class;
-    debugChat("[ANOM-BIND] uiClass="+readProperty(registeredUiData,"uiClass")+", qualified="+qualifiedName(readProperty(registeredUiData,"uiClass")));
-    debugChat("[ANOM-TRACE 07] BEFORE loadUi DIAG");
-    var result:Object=uiApi.loadUi("anomaliesUi","anomaliesUi_DIAG_001");
-    debugChat("[ANOM-TRACE 08] AFTER loadUi result="+result);
-    traceRoot("[ANOM-TRACE 08] result",result);
-    setTimeout(checkDiagnosticPanel,500);
-   } catch(error:Error) {
-    debugChat("[ANOMALIES-UI] ERREUR : "+error.name+" - "+error.message);
-   }
+   var existing:Object=uiApi.getUi("anomaliesUi");
+   if(existing) uiApi.unloadUi("anomaliesUi");
+   else uiApi.loadUi("anomaliesUi","anomaliesUi");
   }
   private function getRegisteredPanel():Object {
    var managerClass:Object=getDefinitionByName("com.ankamagames.berilia.managers::UiModuleManager");

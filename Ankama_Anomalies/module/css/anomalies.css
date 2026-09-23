@@ -45,3 +45,66 @@ lore {
     color: #AAA6A0;
     font-style: italic;
 }
+
+sectiontitle {
+    font-family: Roboto;
+    font-size: 16px;
+    color: #F2F2F0;
+    font-weight: bold;
+    text-align: center;
+    shadow-distance: 2;
+    shadow-blurX: 2;
+    shadow-blurY: 2;
+    shadow-angle: 90;
+    shadow-color: #000000;
+    shadow-strength: 1;
+}
+
+equiplabel {
+    font-family: Roboto;
+    font-size: 14px;
+    color: #F2E8CB;
+    font-weight: bold;
+    text-align: center;
+    shadow-distance: 2;
+    shadow-blurX: 2;
+    shadow-blurY: 2;
+    shadow-angle: 90;
+    shadow-color: #16110B;
+    shadow-strength: 1;
+}
+
+emptyprompt {
+    font-family: Roboto;
+    font-size: 14px;
+    color: #D4D2CE;
+    text-align: center;
+    font-weight: bold;
+    shadow-distance: 2;
+    shadow-blurX: 2;
+    shadow-blurY: 2;
+    shadow-angle: 90;
+    shadow-color: #000000;
+    shadow-strength: 1;
+}
+
+collectiontitle {
+    font-family: Roboto;
+    font-size: 16px;
+    color: #F2F2F0;
+    font-weight: bold;
+    text-align: center;
+    shadow-distance: 2;
+    shadow-blurX: 2;
+    shadow-blurY: 2;
+    shadow-angle: 90;
+    shadow-color: #000000;
+    shadow-strength: 1;
+}
+
+detailname { font-family: Roboto; font-size: 20px; color: #F2F2F0; font-weight: bold; text-align: left; shadow-distance: 2; shadow-blurX: 2; shadow-blurY: 2; shadow-angle: 90; shadow-color: #000000; }
+detailrarity { font-family: Roboto; font-size: 13px; color: #CF55FF; font-weight: bold; text-align: left; }
+detailbody { font-family: Roboto; font-size: 13px; color: #DDD8CE; text-align: left; }
+detailsection { font-family: Roboto; font-size: 14px; color: #F3D77A; font-weight: bold; text-align: left; shadow-distance: 2; shadow-blurX: 2; shadow-blurY: 2; shadow-angle: 90; shadow-color: #171008; shadow-strength: 2; }
+detailvalue { font-family: Roboto; font-size: 13px; color: #72E85F; font-weight: bold; text-align: right; }
+detailmax { font-family: Roboto; font-size: 13px; color: #929292; font-weight: normal; text-align: right; }
