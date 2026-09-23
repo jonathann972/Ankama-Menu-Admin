@@ -57,7 +57,7 @@ package Ankama_Anomalies.ui
   }
   private function refreshInventory(...args):void
   {
-   var item:Object,current:Object,items:Array=inventoryApi.getStorageObjectsByType(TYPE);
+   var item:Object,current:Object,items:Array=inventoryCandidates();
    best={}; activeItem=null; if(!items) items=[];
    for each(item in items)
    {
@@ -66,6 +66,51 @@ package Ankama_Anomalies.ui
     if(effect(item,ACTIVE)>0) activeItem=item;
    }
    selectedItem=selectedDef?best[selectedDef.gid]:null; renderAll();
+  }
+  private function inventoryCandidates():Array
+  {
+   var result:Array=[],seen:Object={},item:Object,d:Object,seed:Object,typed:Array;
+   var configured:Array=inventoryApi.getStorageObjectsByType(TYPE);
+   diagnostic("filtre type="+TYPE+" -> "+(configured?configured.length:0)+" objet(s)");
+   mergeCandidates(result,seen,configured,"type configuré");
+   for each(d in catalog)
+   {
+    seed=inventoryApi.getItemByGID(uint(d.gid));
+    if(!seed)
+    {
+     diagnostic("GID "+d.gid+" absent via getItemByGID");
+     continue;
+    }
+    diagnostic("GID "+d.gid+" trouvé directement : "+describeItem(seed));
+    mergeCandidate(result,seen,seed,"recherche GID");
+    typed=inventoryApi.getStorageObjectsByType(uint(seed.typeId));
+    diagnostic("type réel="+seed.typeId+" -> "+(typed?typed.length:0)+" objet(s)");
+    mergeCandidates(result,seen,typed,"type réel");
+   }
+   diagnostic("candidats uniques retenus="+result.length);
+   return result;
+  }
+  private function mergeCandidates(target:Array,seen:Object,items:Array,source:String):void
+  {
+   var item:Object;
+   if(!items) return;
+   for each(item in items) mergeCandidate(target,seen,item,source);
+  }
+  private function mergeCandidate(target:Array,seen:Object,item:Object,source:String):void
+  {
+   if(!item||seen[item.objectUID]) return;
+   seen[item.objectUID]=true; target.push(item);
+   diagnostic(source+" : "+describeItem(item));
+  }
+  private function describeItem(item:Object):String
+  {
+   var values:Array=[],e:Object;
+   if(item&&item.effects) for each(e in item.effects) values.push(e.effectId+"="+e.value);
+   return "gid="+item.objectGID+", uid="+item.objectUID+", typeId="+item.typeId+", position="+item.position+", effets=["+values.join(",")+"]";
+  }
+  private function diagnostic(message:String):void
+  {
+   sysApi.log(2,"[ANOMALIES-INVENTORY] "+message);
   }
   private function isBetter(a:Object,b:Object):Boolean
   {
