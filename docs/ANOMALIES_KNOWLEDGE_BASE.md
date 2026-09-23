@@ -61,7 +61,23 @@ Ce test prouve que le contexte UI de `AnomaliesModuleBridge` reçoit les API et 
 - Effet chance de répétition : `3100` (valeur en dixièmes de pourcent)
 - Effet puissance de l'écho : `3101`
 - Marqueur actif : `3102`
-- Type candidat : `290`, à confirmer par diagnostic runtime ; ne pas le considérer comme une vérité sans preuve.
+- Type d'objet Anomalie : `290`, confirmé en runtime le 23 septembre 2026.
+
+## Lecture d'inventaire Écho validée en jeu
+
+La lecture seule d'Écho depuis `AnomaliesModuleBridge` a été validée en jeu le 23 septembre 2026 :
+
+- panneau fonctionnel ;
+- `[ANOM-UI] Contrôleur Berilia exécuté` visible ;
+- `Collection 1/1` ;
+- GID Écho `32760` détecté ;
+- premier slot déverrouillé avec l'icône Écho ;
+- chance de répétition : `19,0 % / 20 %` ;
+- puissance de l'Écho : `49 % / 60 %` ;
+- type `290` confirmé par le client en runtime ;
+- diagnostic `anomalies possédées=1`.
+
+Cette version est le point de retour stable obligatoire avant le développement d'ÉQUIPER/DÉSÉQUIPER.
 
 ## Baselines importantes
 
@@ -71,6 +87,7 @@ Ce test prouve que le contexte UI de `AnomaliesModuleBridge` reçoit les API et 
 | Avant tentative de liaison tardive | `CD54EDF238751CC2BC3313C85BB4D7A31B0AF7D38EADE33F49BA94D3546C0610` | `DofusInvoker.before-ui-controller-binding-20260923-000317.bak.swf` |
 | Avant test du bridge contrôleur | `CD54EDF238751CC2BC3313C85BB4D7A31B0AF7D38EADE33F49BA94D3546C0610` | `DofusInvoker.before-native-ui-bridge-test-20260923-001721.bak.swf` |
 | Bridge contrôleur minimal validé en jeu | `76B0341BC05FB1EEB71C7EFB178E25AE7B751BAA8A067F06F5FAA7911515724A` | `DofusInvoker.baseline-native-ui-bridge-validated-20260923-002831.bak.swf` |
+| Lecture inventaire Écho validée en jeu — baseline recommandée | `049F23E30E33A4AD42617A20D684F88DF645A86842F6537C3080A6D5DF6C4A29` | `DofusInvoker.baseline-echo-inventory-validated-20260923.bak.swf` |
 
 ## Diagnostic
 
@@ -85,7 +102,7 @@ Pour le contrôleur, une ligne `[ANOM-UI]` et une modification visuelle contrôl
 ## Restauration
 
 1. Arrêter complètement Dofus.
-2. Identifier la baseline correspondant au dernier test validé.
+2. Restaurer en priorité `DofusInvoker.baseline-echo-inventory-validated-20260923.bak.swf`, sauf si le diagnostic concerne une étape antérieure.
 3. Comparer son SHA256 avec la valeur documentée.
 4. Copier la baseline vers `DofusInvoker.swf`.
 5. Ne modifier aucune autre couche avant d'avoir retesté démarrage, bouton et panneau.

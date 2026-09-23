@@ -1,14 +1,25 @@
 # Restauration rapide — Anomalies
 
+## Baseline recommandée
+
+Le point de restauration stable courant est :
+
+```text
+DofusInvoker.baseline-echo-inventory-validated-20260923.bak.swf
+SHA256: 049F23E30E33A4AD42617A20D684F88DF645A86842F6537C3080A6D5DF6C4A29
+```
+
+Cette baseline valide le démarrage, le bouton, le panneau, le contrôleur natif, la lecture d'Écho, le type runtime `290` et le rendu de ses jets. Elle doit être utilisée avant tout diagnostic concernant les prochaines étapes d'équipement.
+
 ## Client bloqué vers 48 %
 
-1. Restaurer la dernière baseline connue.
+1. Restaurer la baseline recommandée ci-dessus.
 2. Vérifier le `.dm` et le moment de `bindUiClasses()`.
 3. Ne pas continuer à modifier d'autres couches.
 
 ## Client démarre mais le panneau ne s'ouvre plus
 
-1. Restaurer le dernier `DofusInvoker.swf` fonctionnel.
+1. Restaurer la baseline recommandée ci-dessus.
 2. Comparer les SHA256.
 3. Inspecter uniquement les changements du contrôleur ou du bridge.
 
