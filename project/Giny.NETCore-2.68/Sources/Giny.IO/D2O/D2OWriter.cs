@@ -291,6 +291,19 @@ namespace Giny.IO.D2O
             Write(obj, typeof(T), index);
         }
 
+        /// <summary>
+        /// Serializes one object with the class definitions already loaded from
+        /// the source D2O. This does not rewrite the source file or its indexes.
+        /// </summary>
+        public byte[] SerializeObject(object obj)
+        {
+            using (var writer = new BigEndianWriter())
+            {
+                WriteObject(writer, obj, obj.GetType());
+                return writer.Data;
+            }
+        }
+
         public void Delete(int index)
         {
             lock (m_writingSync)
