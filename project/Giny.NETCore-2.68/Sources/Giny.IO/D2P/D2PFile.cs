@@ -652,6 +652,7 @@ namespace Giny.IO.D2P
                     throw new InvalidOperationException("Cannot perform SaveAs : file already exist, notify overwrite parameter to true");
                 }
                 stream = File.OpenWrite(destination);
+                stream.SetLength(0);
             }
             using (BigEndianWriter writer = new BigEndianWriter(stream))
             {

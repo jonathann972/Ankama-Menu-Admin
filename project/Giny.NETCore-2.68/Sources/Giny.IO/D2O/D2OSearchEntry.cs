@@ -44,5 +44,8 @@ namespace Giny.IO.D2O
             get;
             set;
         }
+
+        public int DescriptorOffsetPosition { get; set; }
+        public int DescriptorFieldCountPosition { get; set; }
     }
 }
