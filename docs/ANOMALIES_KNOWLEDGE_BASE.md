@@ -233,3 +233,91 @@ Validation du 23 septembre 2026 : détection et sélection des deux anomalies, c
 | Serveur `Giny.World.dll` | `3C14B08854B14416AA0049086616F88B61C9638CDBC7D18B12298DCDB8866250` | `Giny.World.baseline-echo-remanence-validated-20260923.bak.dll` |
 
 Cette baseline devient le point de restauration officiel. Le passif visuel Rémanence reste explicitement hors périmètre et sera étudié comme UI custom séparée.
+
+## Tooltips Anomalies — icônes et jets validés en jeu
+
+Validation du 23 septembre 2026 : les tooltips standards d'Écho et de Rémanence affichent désormais correctement leur icône, leur rareté, leur description et leurs jets d'instance. Ce correctif est indépendant du panneau custom Anomalies et de l'Encyclopédie.
+
+### Chaîne de l'icône
+
+Le chemin fonctionnel confirmé est :
+
+```text
+ItemTooltipUi
+→ ItemWrapper.typeId == 290
+→ ItemWrapper.iconUri
+→ getIconUri(true)
+→ bitmap0.d2p / archives associées
+→ <iconId>.png
+```
+
+Valeurs validées :
+
+```text
+Écho       GID=32760 typeId=290 iconId=32760 → 32760.png
+Rémanence  GID=32761 typeId=290 iconId=32761 → 32761.png
+```
+
+Pour une Anomalie, utiliser `iconUri` dans `ItemTooltipUi`. Le chemin vanilla `fullSizeIconUri` ne convient pas à ces icônes custom. Le type `290`, les `iconId` et les objets D2O sont maintenant gelés : ne pas les modifier pour résoudre un problème de rendu du tooltip.
+
+### Moteur générique des jets
+
+`ItemTooltipUi` possède une définition centralisée par GID. Chaque définition associe une rareté et une liste d'effets à rendre. La fonction de rendu reste unique : elle parcourt `ItemWrapper.effects`, indexe les valeurs par `effectId`, applique le format déclaré, puis construit la section `Jets de l'Anomalie`.
+
+Mappings validés :
+
+| Anomalie | EffectId | Libellé | Conversion | Plage affichée |
+|---|---:|---|---|---|
+| Écho `32760` | `3100` | Chance de répétition | valeur / 10, une décimale | `17–20 %` |
+| Écho `32760` | `3101` | Puissance de l'Écho | entier | `40–60 %` |
+| Rémanence `32761` | `3103` | Chance de Rémanence | valeur / 10, une décimale | `15–25 %` |
+| Rémanence `32761` | `3104` | PA conservés | entier | `1–2` |
+
+Les valeurs affichées ne doivent jamais être inscrites en dur dans le SWF : elles proviennent exclusivement des effets de l'instance reçue par le tooltip. Seuls les métadonnées de présentation — identifiant, libellé, échelle, décimales, suffixe et plage — appartiennent au mapping client.
+
+Le rendu validé utilise :
+
+- `Rareté :` en doré et `Épique` en violet ;
+- la description en bleu ciel ;
+- `Jets de l'Anomalie` en doré ;
+- les valeurs réelles en vert ;
+- les plages min/max en gris.
+
+La section des jets est ajoutée après le contenu descriptif final. Elle ne doit pas dépendre d'une substitution fragile autour du texte brut de rareté. Les effets présents sont rendus depuis le mapping ; le moteur n'est pas dupliqué avec une succession de branches propres à chaque Anomalie. Pour ajouter une troisième Anomalie, ajouter uniquement une nouvelle définition GID/effets.
+
+### Instances et diagnostic
+
+Plusieurs instances d'un même GID peuvent coexister avec des UID et des jets différents. État observé pendant le diagnostic Écho :
+
+```text
+UID 65 : aucun effet
+UID 81 : 3100=182, 3101=42
+UID 83 : 3100=194, 3101=41
+UID 84 : 3100=190, 3101=49
+```
+
+Le panneau custom sélectionne la meilleure instance disponible ; son affichage ne prouve donc pas à lui seul quel UID est survolé dans l'inventaire. En cas de nouvelle régression, tracer l'UID et `ItemWrapper.effects` reçus par `ItemTooltipUi` avant de modifier les données serveur ou les D2O.
+
+### Artefacts du correctif tooltip
+
+| Artefact | SHA256 |
+|---|---|
+| `DofusInvoker.swf` — tooltip générique Écho + Rémanence validé en jeu | `ACE6AFD3B5CAD4A760872D235B039D58EB9F82633E24642A46CB53270ED3E612` |
+| Sauvegarde avant correctif `DofusInvoker.before-tooltip-jets-generic-20260923.bak.swf` | `F8A7188630C6913A49C361A331C13B197579EC7BD3329C612001E929329B244F` |
+
+### Garde-fous
+
+Pour toute correction future limitée au tooltip Anomalie, ne pas toucher à :
+
+```text
+Items.d2o
+ItemTypes.d2o
+typeId / iconId
+index D2O
+Encyclopédie et ses filtres
+panneau custom Anomalies
+AnomalyRollManager
+items vanilla
+```
+
+Séparer strictement les responsabilités : les D2O définissent l'objet et son icône, le serveur fournit les effets d'instance, et `ItemTooltipUi` effectue uniquement leur présentation.
