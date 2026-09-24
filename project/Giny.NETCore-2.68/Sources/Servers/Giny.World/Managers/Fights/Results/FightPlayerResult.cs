@@ -1,7 +1,6 @@
 ﻿
 using Giny.Core.DesignPattern;
 using Giny.Core.IO.Configuration;
-using Giny.Core;
 using Giny.ORM;
 using Giny.Protocol.Enums;
 using Giny.Protocol.Types;
@@ -11,7 +10,6 @@ using Giny.World.Managers.Experiences;
 using Giny.World.Managers.Fights.Fighters;
 using Giny.World.Managers.Formulas;
 using Giny.World.Managers.Guilds;
-using Giny.World.Managers.Items.Anomalies;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -87,15 +85,7 @@ namespace Giny.World.Managers.Fights.Results
             foreach (DroppedItem current in base.Loot.Items.Values)
             {
                 if (current.Instance != null)
-                {
                     this.Character.Inventory.AddItem(current.Instance);
-                    if (current.ItemGId == AnomalyRollManager.RemanenceItemId)
-                    {
-                        var chance = AnomalyRollManager.GetRoll(current.Instance, AnomalyRollManager.RemanenceChanceEffectId);
-                        var storedAp = AnomalyRollManager.GetRoll(current.Instance, AnomalyRollManager.RemanenceStoredApEffectId);
-                        Logger.Write($"[ANOM-DROP] Rémanence créée uid={current.Instance.UId} chance={chance / 10d:0.0}% pa={storedAp}", Channels.Info);
-                    }
-                }
                 else
                     this.Character.Inventory.AddItem(current.ItemGId, current.Amount);
             }

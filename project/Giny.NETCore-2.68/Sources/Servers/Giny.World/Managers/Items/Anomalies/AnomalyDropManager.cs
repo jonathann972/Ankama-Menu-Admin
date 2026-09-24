@@ -6,8 +6,6 @@ namespace Giny.World.Managers.Items.Anomalies
     public static class AnomalyDropManager
     {
         private const short RoyalGobballMonsterId = 147;
-        private const short RasboulMonsterId = 1071;
-        private const double RemanenceDropRate = 1d;
 
         public static void ConfigureDevelopmentDrops()
         {
@@ -16,31 +14,7 @@ namespace Giny.World.Managers.Items.Anomalies
                 return;
 
             AddDevelopmentDrop(royalGobball, AnomalyRollManager.EchoItemId);
-        }
-
-        public static void ConfigureOfficialDrops()
-        {
-            var rasboul = MonsterRecord.GetMonsterRecord(RasboulMonsterId);
-            if (rasboul == null)
-                return;
-
-            if (rasboul.Drops.Any(x => x.ItemGId == AnomalyRollManager.RemanenceItemId))
-                return;
-
-            rasboul.Drops.Add(new MonsterDrop
-            {
-                ItemGId = AnomalyRollManager.RemanenceItemId,
-                PercentDropForGrade1 = RemanenceDropRate,
-                PercentDropForGrade2 = RemanenceDropRate,
-                PercentDropForGrade3 = RemanenceDropRate,
-                PercentDropForGrade4 = RemanenceDropRate,
-                PercentDropForGrade5 = RemanenceDropRate,
-                DropLimit = 1,
-                ProspectingLock = 0,
-                RollsCounter = 1,
-                criteria = string.Empty,
-                HasCriteria = false,
-            });
+            AddDevelopmentDrop(royalGobball, AnomalyRollManager.RemanenceItemId);
         }
 
         private static void AddDevelopmentDrop(MonsterRecord monster, int itemGid)

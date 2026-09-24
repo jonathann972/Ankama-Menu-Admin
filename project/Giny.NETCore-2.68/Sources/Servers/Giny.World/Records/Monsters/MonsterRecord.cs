@@ -188,7 +188,6 @@ namespace Giny.World.Records.Monsters
             }
 
             AnomalyDropManager.ConfigureDevelopmentDrops();
-            AnomalyDropManager.ConfigureOfficialDrops();
         }
 
         public MonsterGrade GetGrade(byte gradeId)

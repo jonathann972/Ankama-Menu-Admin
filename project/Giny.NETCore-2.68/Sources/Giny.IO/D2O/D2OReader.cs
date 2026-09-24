@@ -117,9 +117,6 @@ namespace Giny.IO.D2O
             }
         }
 
-        public IReadOnlyDictionary<string, D2OSearchEntry> SearchEntries => m_searchEntries;
-        public int SearchDataOffset { get; private set; }
-
         private void Initialize()
         {
             lock (m_reader)
@@ -244,18 +241,12 @@ namespace Giny.IO.D2O
         {
             var tableLen = m_reader.ReadInt();
             var contentOffset = (int)(m_reader.Position + 4 + tableLen);
-            SearchDataOffset = contentOffset;
             while (tableLen > 0)
             {
                 var bytesAvailable = m_reader.BytesAvailable;
-                var fieldName = m_reader.ReadUTF();
-                var descriptorOffsetPosition = (int)m_reader.Position;
-                var fieldIndex = m_reader.ReadInt() + contentOffset;
-                var fieldType = (D2OFieldType)m_reader.ReadInt();
-                var descriptorFieldCountPosition = (int)m_reader.Position;
-                var searchEntry = new D2OSearchEntry(fieldName, fieldIndex, fieldType, m_reader.ReadInt());
-                searchEntry.DescriptorOffsetPosition = descriptorOffsetPosition;
-                searchEntry.DescriptorFieldCountPosition = descriptorFieldCountPosition;
+
+                var searchEntry = new D2OSearchEntry(m_reader.ReadUTF(), m_reader.ReadInt() + contentOffset, (D2OFieldType)m_reader.ReadInt(),
+                    m_reader.ReadInt());
 
                 if (!m_searchEntries.ContainsKey(searchEntry.FieldName))
                     m_searchEntries.Add(searchEntry.FieldName, searchEntry);

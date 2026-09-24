@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Giny.Core.Extensions;
 using Giny.Core.Time;
-using Giny.Core;
 using Giny.Protocol.Custom.Enums;
 using Giny.Protocol.Enums;
 using Giny.Protocol.Types;
@@ -14,7 +13,6 @@ using Giny.World.Managers.Fights.Cast;
 using Giny.World.Managers.Fights.Results;
 using Giny.World.Managers.Fights.Stats;
 using Giny.World.Managers.Formulas;
-using Giny.World.Managers.Items.Anomalies;
 using Giny.World.Managers.Monsters;
 using Giny.World.Records.Maps;
 using Giny.World.Records.Monsters;
@@ -151,13 +149,8 @@ namespace Giny.World.Managers.Fights.Fighters
 
                     var chance = (Random.Next(0, 100) + Random.NextDouble());
                     var dropRate = FightFormulas.Instance.AdjustDropChance(looter, droppableItem, Monster, bonusRatio);
-                    var isRemanenceDrop = Monster.Record.Id == 1071 && droppableItem.ItemGId == AnomalyRollManager.RemanenceItemId;
-                    var proc = dropRate >= chance;
 
-                    if (isRemanenceDrop)
-                        Logger.Write($"[ANOM-DROP] boss=1071 item=32761 roll={chance:0.00}/{dropRate:0.00} -> {(proc ? "PROC" : "FAIL")}", Channels.Info);
-
-                    if (!proc)
+                    if (!(dropRate >= chance))
                         continue;
 
                     items.Add(new DroppedItem((short)droppableItem.ItemGId, 1));
