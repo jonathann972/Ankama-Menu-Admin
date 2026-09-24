@@ -1,0 +1,20 @@
+{
+  "gid": 32762,
+  "iconId": 32762,
+  "name": "Toison",
+  "level": 6,
+  "rarity": "Commune",
+  "category": "Mêlée",
+  "description": "Après avoir subi des dégâts de mêlée, Toison peut restaurer une petite partie des points de vie perdus.",
+  "bossMonsterId": 147,
+  "bossName": "Bouftou Royal",
+  "dungeon": "Cour du Bouftou Royal",
+  "dropRatePercent": 1.0,
+  "ignoreProspecting": true,
+  "trigger": "melee_damage_taken",
+  "maxAttemptsPerTurn": 1,
+  "effects": [
+    { "effectId": 3105, "label": "Chance de déclenchement", "minimum": 150, "maximum": 250, "scale": 10, "suffix": " %" },
+    { "effectId": 3106, "label": "PV perdus restaurés", "minimum": 10, "maximum": 20, "scale": 1, "suffix": " %" }
+  ]
+}
