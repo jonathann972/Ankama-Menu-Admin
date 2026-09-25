@@ -42,6 +42,10 @@ namespace Giny.World.Managers.Fights.Fighters
         private bool m_echoAttemptedThisTurn;
         private short m_remanenceReservedAp;
         private short m_remanenceGrantedThisTurn;
+        private bool m_toisonAttemptedThisTurn;
+        private bool m_monolitheProtectionActive;
+        private bool m_monolitheSpentMpThisTurn;
+        private int m_monolitheReductionPercent;
         public event Action<CharacterFighter> OnCloseCombat;
 
         public Character Character
@@ -103,6 +107,7 @@ namespace Giny.World.Managers.Fights.Fighters
         {
             this.Character = character;
             this.Left = false;
+            DamageReceived += OnToisonDamageReceived;
         }
 
         public override FighterStats CreateStats()
@@ -539,6 +544,12 @@ namespace Giny.World.Managers.Fights.Fighters
         public override void OnTurnBegin()
         {
             m_echoAttemptedThisTurn = false;
+            m_toisonAttemptedThisTurn = false;
+            if (m_monolitheProtectionActive)
+                Logger.Write($"[ANOM-MONOLITHE] protection expirée personnage={Id}", Channels.Info);
+            m_monolitheProtectionActive = false;
+            m_monolitheReductionPercent = 0;
+            m_monolitheSpentMpThisTurn = false;
             /*Character.Reply("Lifepoints :" + Stats.LifePoints);
             Character.Reply("MaxLifepoints :" + Stats.MaxLifePoints);
             Character.Reply("Erroded :" + Stats.Life.Eroded); */
@@ -561,15 +572,79 @@ namespace Giny.World.Managers.Fights.Fighters
 
 
         }
+
+        private void OnToisonDamageReceived(Damage damage, DamageResult result)
+        {
+            if (m_toisonAttemptedThisTurn || result.LifeLoss <= 0 || damage?.Source == null || damage.Source == this)
+                return;
+
+            var anomaly = AnomalyRollManager.Instance.GetActiveAnomaly(Character);
+            if (anomaly == null || anomaly.GId != AnomalyRollManager.ToisonItemId || !damage.Source.IsMeleeWith(this))
+                return;
+
+            // The first eligible melee hit consumes the attempt even on failure.
+            m_toisonAttemptedThisTurn = true;
+            var chance = AnomalyRollManager.GetRoll(anomaly, AnomalyRollManager.ToisonChanceEffectId) / 10d;
+            var healPercent = AnomalyRollManager.GetRoll(anomaly, AnomalyRollManager.ToisonHealPercentEffectId);
+            var roll = Random.NextDouble() * 100d;
+            var proc = roll < chance;
+            Logger.Write($"[ANOM-TOISON] tentative uid={anomaly.UId} perte={result.LifeLoss} roll={roll.ToString("0.00", CultureInfo.InvariantCulture)} / {chance.ToString("0.00", CultureInfo.InvariantCulture)} -> {(proc ? "PROC" : "FAIL")}", Channels.Info);
+            if (!proc || Stats.LifePoints <= 0)
+                return;
+
+            var heal = Math.Max(1, (int)Math.Round(result.LifeLoss * healPercent / 100d));
+            var recoverable = Math.Max(0, Stats.MaxLifePoints - Stats.LifePoints);
+            heal = Math.Min(heal, recoverable);
+            if (heal <= 0)
+                return;
+
+            Heal(new Healing(this, this, EffectElementEnum.None, heal, heal, null, true));
+            Logger.Write($"[ANOM-TOISON] soin uid={anomaly.UId} perte={result.LifeLoss} pourcentage={healPercent} soin={heal}", Channels.Info);
+        }
         public override void OnTurnEnded()
         {
             StoreRemanenceReserve();
+            ActivateMonolitheProtection();
             SummonedFighter summon = GetNextControlableSummon(1);
 
             if (summon != null)
             {
                 summon.SwitchContext();
             }
+        }
+
+        private void ActivateMonolitheProtection()
+        {
+            var anomaly = AnomalyRollManager.Instance.GetActiveAnomaly(Character);
+            if (anomaly == null || anomaly.GId != AnomalyRollManager.MonolitheItemId || m_monolitheSpentMpThisTurn)
+            {
+                m_monolitheProtectionActive = false;
+                m_monolitheReductionPercent = 0;
+                return;
+            }
+
+            m_monolitheReductionPercent = Math.Clamp(
+                AnomalyRollManager.GetRoll(anomaly, AnomalyRollManager.MonolitheReductionEffectId), 5, 10);
+            m_monolitheProtectionActive = true;
+            Logger.Write($"[ANOM-MONOLITHE] protection activée uid={anomaly.UId} réduction={m_monolitheReductionPercent}%", Channels.Info);
+        }
+
+        protected override void AdjustIncomingDamage(Damage damage)
+        {
+            if (!m_monolitheProtectionActive || !damage.Computed.HasValue || damage.Computed.Value <= 0)
+                return;
+
+            var anomaly = AnomalyRollManager.Instance.GetActiveAnomaly(Character);
+            if (anomaly == null || anomaly.GId != AnomalyRollManager.MonolitheItemId)
+            {
+                m_monolitheProtectionActive = false;
+                m_monolitheReductionPercent = 0;
+                return;
+            }
+
+            var before = damage.Computed.Value;
+            damage.Computed = Math.Max(0, (int)Math.Floor(before * (100d - m_monolitheReductionPercent) / 100d));
+            Logger.Write($"[ANOM-MONOLITHE] dégâts réduits uid={anomaly.UId} avant={before} après={damage.Computed.Value} réduction={m_monolitheReductionPercent}%", Channels.Info);
         }
 
         public void ApplyRemanenceReserveBeforeTurnStart()
@@ -751,7 +826,17 @@ namespace Giny.World.Managers.Fights.Fighters
             }
             else if (IsFighterTurn)
             {
+                var cellBefore = Cell;
+                var usedMpBefore = Stats.MovementPoints.Used;
                 base.Move(path);
+                if (Stats.MovementPoints.Used > usedMpBefore)
+                    m_monolitheSpentMpThisTurn = true;
+                if (Cell != cellBefore && m_monolitheProtectionActive)
+                {
+                    m_monolitheProtectionActive = false;
+                    m_monolitheReductionPercent = 0;
+                    Logger.Write($"[ANOM-MONOLITHE] protection retirée personnage={Id} raison=déplacement_volontaire", Channels.Info);
+                }
             }
         }
         private void SendTurnResume()

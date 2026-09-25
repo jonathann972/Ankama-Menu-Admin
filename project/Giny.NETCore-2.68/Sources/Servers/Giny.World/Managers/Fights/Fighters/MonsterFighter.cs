@@ -13,6 +13,7 @@ using Giny.World.Managers.Fights.Cast;
 using Giny.World.Managers.Fights.Results;
 using Giny.World.Managers.Fights.Stats;
 using Giny.World.Managers.Formulas;
+using Giny.World.Managers.Items.Anomalies;
 using Giny.World.Managers.Monsters;
 using Giny.World.Records.Maps;
 using Giny.World.Records.Monsters;
@@ -140,7 +141,10 @@ namespace Giny.World.Managers.Fights.Fighters
 
             var prospectingSum = EnemyTeam.GetFighters<CharacterFighter>(false).Sum(entry => entry.Stats[CharacteristicEnum.MAGIC_FIND].TotalInContext()); ;
 
-            foreach (var droppableItem in Monster.Record.Drops.Where(droppableItem => !droppableItem.HasCriteria && prospectingSum >= droppableItem.ProspectingLock).Shuffle())
+            foreach (var droppableItem in Monster.Record.Drops.Where(droppableItem =>
+                !droppableItem.HasCriteria &&
+                prospectingSum >= droppableItem.ProspectingLock &&
+                AnomalyDropManager.CanDrop(droppableItem.ItemGId, Fight.Map.Id)).Shuffle())
             {
                 for (var i = 0; i < droppableItem.RollsCounter; i++)
                 {

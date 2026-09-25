@@ -1,0 +1,15 @@
+{
+  "gid": 32763,
+  "templateGid": 32762,
+  "name": "Nom de l'Anomalie",
+  "description": "Description affichée dans le tooltip.",
+  "rarity": "Commune",
+  "level": 6,
+  "iconFile": "MonAnomalie_64x64.png",
+  "bossMonsterId": 147,
+  "dropPercent": 1.0,
+  "effects": [
+    { "id": 3107, "label": "Chance de déclenchement", "minimum": 150, "maximum": 250, "scale": 10, "suffix": "%" },
+    { "id": 3108, "label": "Puissance", "minimum": 10, "maximum": 20, "scale": 1, "suffix": "%" }
+  ]
+}

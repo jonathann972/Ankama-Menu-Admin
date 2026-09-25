@@ -35,6 +35,7 @@ package com.ankamagames.dofus
    import flash.text.TextField;
    import flash.text.TextFormat;
    import com.ankamagames.jerakine.utils.display.StageShareManager;
+   import com.ankamagames.berilia.utils.BeriliaHookList;
    import com.ankamagames.dofus.misc.lists.HookList;
    
    public class Modules
@@ -107,11 +108,28 @@ package com.ankamagames.dofus
       public function main() : void
       {
          this.sysApi.addHook(HookList.GameStart,this.onGameStart);
+         this.sysApi.addHook(BeriliaHookList.UiLoaded,this.onUiLoaded);
+         setTimeout(this.installNativeButton,800);
+         setTimeout(this.watchNativeButton,5000);
       }
 
       private function onGameStart() : void
       {
          setTimeout(this.installNativeButton,800);
+      }
+
+      private function onUiLoaded(name:String) : void
+      {
+         if(name == "bannerMenu")
+         {
+            setTimeout(this.installNativeButton,250);
+         }
+      }
+
+      private function watchNativeButton() : void
+      {
+         this.installNativeButton();
+         setTimeout(this.watchNativeButton,5000);
       }
 
       private function installNativeButton() : void
@@ -223,7 +241,7 @@ package com.ankamagames.dofus
       private function equipSelected(e:MouseEvent) : void
       {
          var actionClass:Object=getDefinitionByName("com.ankamagames.dofus.logic.game.common.actions.chat.ChatTextOutputAction");
-         this.sysApi.sendAction(actionClass.create(this.active&&this.active.objectUID==this.selected.objectUID?"/anomaly off":"/anomaly "+this.selected.objectUID));
+         this.sysApi.sendAction(actionClass.create(this.active&&this.active.objectUID==this.selected.objectUID?".anomaly off":".anomaly "+this.selected.objectUID));
          this.togglePanel();this.togglePanel();
       }
    }
@@ -406,7 +424,7 @@ package com.ankamagames.dofus
          }
          else if(target == this.btn_equip && this.selected)
          {
-            this.sendCommand(this.active && this.active.objectUID == this.selected.objectUID ? "/anomaly off" : "/anomaly " + this.selected.objectUID);
+            this.sendCommand(this.active && this.active.objectUID == this.selected.objectUID ? ".anomaly off" : ".anomaly " + this.selected.objectUID);
             this.active = this.active && this.active.objectUID == this.selected.objectUID ? null : this.selected;
             this.slot_equipped.data = this.active;
             this.details();

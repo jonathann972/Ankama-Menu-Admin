@@ -3,7 +3,8 @@ package Ankama_Anomalies.ui
  import flash.utils.getDefinitionByName;
  public class AnomaliesUi
  {
-  private static const TYPE:uint=290, CHANCE:uint=3100, POWER:uint=3101, ACTIVE:uint=3102;
+  private static const DESCRIPTION_MAX_LENGTH:int=140;
+  private static const TYPE:uint=290, ACTIVE:uint=3102;
   private static const PAGE_SIZE:int=10;
   [Api(name="SystemApi")] public var sysApi:Object;
   [Api(name="UiApi")] public var uiApi:Object;
@@ -11,8 +12,9 @@ package Ankama_Anomalies.ui
   public var mainCtr:Object,btn_close:Object,btn_equip:Object,btn_collection_prev:Object,btn_collection_next:Object;
   public var lbl_btn_equip:Object,lbl_collection:Object,lbl_collection_page:Object;
   public var tx_equipped_empty:Object,tx_equipped_active:Object,tx_equipped_icon:Object,tx_detail_icon:Object;
+  public var lbl_equipped_name:Object,lbl_equipped_level:Object;
   public var lbl_detail_name:Object,lbl_detail_rarity:Object,lbl_detail_level:Object,lbl_detail_description:Object;
-  public var lbl_detail_chance:Object,lbl_detail_chance_max:Object,lbl_detail_power:Object,lbl_detail_power_max:Object;
+  public var lbl_detail_stat1_name:Object,lbl_detail_stat2_name:Object,lbl_detail_chance:Object,lbl_detail_chance_max:Object,lbl_detail_power:Object,lbl_detail_power_max:Object;
   public var lbl_detail_category:Object,lbl_detail_source:Object,lbl_detail_date:Object;
   public var tx_collection_locked_0:Object,tx_collection_locked_1:Object,tx_collection_locked_2:Object,tx_collection_locked_3:Object,tx_collection_locked_4:Object;
   public var tx_collection_locked_5:Object,tx_collection_locked_6:Object,tx_collection_locked_7:Object,tx_collection_locked_8:Object,tx_collection_locked_9:Object;
@@ -34,9 +36,24 @@ package Ankama_Anomalies.ui
   private function createCatalog():void
   {
    var root:String=String(sysApi.getConfigEntry("config.mod.path"))+"Ankama_Anomalies/assets/";
-   catalog=[{gid:32760,name:"Écho",rarity:"ANOMALIE ÉPIQUE",level:1,
-    description:"« Le premier sort offensif éligible lancé durant le tour peut être répété avec une puissance réduite. »",
-    category:"Offensive",source:"Donjon X",icon:root+"echo-64.png",chanceMin:170,chanceMax:200,powerMin:40,powerMax:60}];
+   catalog=[
+    {gid:32760,name:"Écho",rarity:"ANOMALIE ÉPIQUE",level:1,description:"« Le premier sort offensif éligible lancé durant le tour peut être répété avec une puissance réduite. »",category:"Offensive",source:"Donjon X",icon:root+"echo-64.png",stat1Name:"Chance de répétition",stat1Id:3100,stat1Min:170,stat1Max:200,stat1Scale:10,stat1Suffix:" %",stat2Name:"Puissance de l'écho",stat2Id:3101,stat2Min:40,stat2Max:60,stat2Scale:1,stat2Suffix:" %"},
+    {gid:32761,name:"Rémanence",rarity:"ANOMALIE ÉPIQUE",level:1,description:"« À la fin de votre tour, Rémanence peut conserver une partie de vos PA inutilisés pour votre prochain tour. »",category:"Utilitaire",source:"Donjon X",icon:root+"Remanence_64x64.png",stat1Name:"Chance de rémanence",stat1Id:3103,stat1Min:150,stat1Max:250,stat1Scale:10,stat1Suffix:" %",stat2Name:"PA conservés",stat2Id:3104,stat2Min:1,stat2Max:2,stat2Scale:1,stat2Suffix:""},
+    {gid:32762,name:"Toison",rarity:"ANOMALIE COMMUNE",level:6,description:"« Après avoir subi des dégâts de mêlée, Toison peut restaurer une petite partie des points de vie perdus. »",category:"Mêlée",source:"Bouftou Royal",icon:root+"Toison_64x64.png",stat1Name:"Chance de déclenchement",stat1Id:3105,stat1Min:150,stat1Max:250,stat1Scale:10,stat1Suffix:" %",stat2Name:"PV perdus restaurés",stat2Id:3106,stat2Min:10,stat2Max:20,stat2Scale:1,stat2Suffix:" %"},
+    {gid:32764,name:"Rétribut",rarity:"ANOMALIE RARE",level:8,description:"La première attaque directe reçue peut déclencher une riposte réduite sur l'attaquant. Une seule tentative par tour.",category:"Anomalie",source:"Maître Corbac",icon:root+"Retribut_64x64.png",stat1Name:"Chance de riposte",stat1Id:3109,stat1Min:150,stat1Max:250,stat1Scale:10,stat1Suffix:" %",stat2Name:"Puissance de la riposte",stat2Id:3110,stat2Min:20,stat2Max:30,stat2Scale:1,stat2Suffix:" %"},
+    {gid:32765,name:"Dédale",rarity:"ANOMALIE RARE",level:6,description:"Après un déplacement forcé subi, Dédale peut se déclencher et accorde temporairement de l'Esquive PM ainsi qu'une charge de mobilité. Limite : une tentative par tour.",category:"Anomalie",source:"Minotoror",icon:root+"Dedale_64x64.png",stat1Name:"Chance de déclenchement",stat1Id:3111,stat1Min:150,stat1Max:250,stat1Scale:10,stat1Suffix:" %",stat2Name:"Esquive PM",stat2Id:3112,stat2Min:10,stat2Max:20,stat2Scale:1,stat2Suffix:""},
+    {gid:32766,name:"Méphitique",rarity:"ANOMALIE RARE",level:10,description:"Perdre des PA peut contaminer l'attaquant avec un poison léger. Le contrecoup dépend des PA dépensés par la cible contaminée et reste plafonné afin d'éviter un effet disproportionné.",category:"Anomalie",source:"Dragon Cochon",icon:root+"Mephitique_64x64.png",stat1Name:"Chance de contamination",stat1Id:3113,stat1Min:150,stat1Max:250,stat1Scale:10,stat1Suffix:" %",stat2Name:"Puissance du poison",stat2Id:3114,stat2Min:10,stat2Max:20,stat2Scale:1,stat2Suffix:" %"},
+    {gid:32767,name:"Éruption",rarity:"ANOMALIE ÉPIQUE",level:8,description:"Alterner des éléments remplit une jauge volcanique. Chaque action valide ajoute 1 charge, jusqu'à 3. À 3 charges, la prochaine action concernée consomme les charges et déclenche une décharge.",category:"Anomalie",source:"Crocabulia",icon:root+"Eruption_64x64.png",stat1Name:"Puissance de la décharge",stat1Id:3115,stat1Min:20,stat1Max:30,stat1Scale:1,stat1Suffix:" %",stat2Name:"",stat2Id:0,stat2Min:0,stat2Max:0,stat2Scale:1,stat2Suffix:""},
+    {gid:32768,name:"Germiner",rarity:"ANOMALIE COMMUNE",level:8,description:"Finir un tour sans avoir subi de dégâts fait germer un soin au début du tour suivant. L'effet ne se déclenche qu'une seule fois et ne peut pas s'alimenter lui-même.",category:"Anomalie",source:"Tournesol Affamé",icon:root+"Germiner_64x64.png",stat1Name:"Puissance du soin",stat1Id:3116,stat1Min:5,stat1Max:10,stat1Scale:1,stat1Suffix:" %",stat2Name:"",stat2Id:0,stat2Min:0,stat2Max:0,stat2Scale:1,stat2Suffix:""},
+    {gid:32769,name:"Paralysie",rarity:"ANOMALIE RARE",level:9,description:"Les PA dépensés par une cible empoisonnée augmentent son contrecoup, avec un plafond afin qu'un tour disposant de beaucoup de PA ne produise pas un effet disproportionné.",category:"Anomalie",source:"Abraknyde Ancestral",icon:root+"Paralysie_64x64.png",stat1Name:"Puissance par PA dépensé",stat1Id:3117,stat1Min:2,stat1Max:4,stat1Scale:1,stat1Suffix:" %",stat2Name:"",stat2Id:0,stat2Min:0,stat2Max:0,stat2Scale:1,stat2Suffix:""},
+    {gid:32770,name:"Ramifier",rarity:"ANOMALIE ÉPIQUE",level:8,description:"Un sort monocible peut semer une copie très réduite de ses dégâts sur un ennemi adjacent à la cible principale.",category:"Anomalie",source:"Chêne Mou",icon:root+"Ramifier_64x64.png",stat1Name:"Chance de ramification",stat1Id:3118,stat1Min:150,stat1Max:250,stat1Scale:10,stat1Suffix:" %",stat2Name:"Dégâts de ramification",stat2Id:3119,stat2Min:15,stat2Max:25,stat2Scale:1,stat2Suffix:" %"},
+    {gid:32771,name:"Chromatis",rarity:"ANOMALIE RARE",level:9,description:"Deux éléments différents utilisés à la suite accordent un bonus temporaire propre au second élément, jusqu'à la fin du tour.",category:"Anomalie",source:"Blop Multicolore Royal",icon:root+"Chromatis_64x64.png",stat1Name:"Puissance du bonus élémentaire",stat1Id:3120,stat1Min:10,stat1Max:20,stat1Scale:1,stat1Suffix:" %",stat2Name:"",stat2Id:0,stat2Min:0,stat2Max:0,stat2Scale:1,stat2Suffix:""},
+    {gid:32772,name:"Brutalité",rarity:"ANOMALIE COMMUNE",level:9,description:"Après une attaque de mêlée, une faible chance permet de préparer un bonus de puissance. Le bonus est appliqué au début du prochain tour et disparaît à la fin de celui-ci.",category:"Anomalie",source:"Bworkette",icon:root+"Brutalite_64x64.png",stat1Name:"Chance de déclenchement",stat1Id:3121,stat1Min:100,stat1Max:200,stat1Scale:10,stat1Suffix:" %",stat2Name:"Puissance au prochain tour",stat2Id:3122,stat2Min:20,stat2Max:40,stat2Scale:1,stat2Suffix:" %"},
+    {gid:32773,name:"Poursuite",rarity:"ANOMALIE ÉPIQUE",level:9,description:"Sous 75 % de PV, gagne un bonus offensif croissant. Il augmente sous 50 % puis 25 %, et diminue lorsque les PV remontent.",category:"Anomalie",source:"Bworker",icon:root+"Poursuite_64x64.png",stat1Name:"Puissance par palier",stat1Id:3123,stat1Min:10,stat1Max:20,stat1Scale:1,stat1Suffix:" %",stat2Name:"",stat2Id:0,stat2Min:0,stat2Max:0,stat2Scale:1,stat2Suffix:""},
+    {gid:32774,name:"Frénésie",rarity:"ANOMALIE RARE",level:8,description:"La troisième attaque directe contre la même cible pendant un tour reçoit le bonus. Changer de cible remet le compteur à zéro. Maximum 1 bonus par tour.",category:"Anomalie",source:"Meulou",icon:root+"Frenesie_64x64.png",stat1Name:"Puissance de l'effet",stat1Id:3124,stat1Min:10,stat1Max:20,stat1Scale:1,stat1Suffix:" %",stat2Name:"Puissance offensive",stat2Id:3125,stat2Min:10,stat2Max:20,stat2Scale:1,stat2Suffix:" %"},
+    {gid:32775,name:"BondRoyal",rarity:"ANOMALIE COMMUNE",level:9,description:"Après avoir dépensé au moins 5 PM dans le tour, prépare +1 PM pour le tour suivant. Maximum 1 fois par tour ; le PM temporaire disparaît en fin de tour.",category:"Anomalie",source:"Wa Wabbit",icon:root+"BondRoyal_64x64.png",stat1Name:"Bonus par PM / case",stat1Id:3126,stat1Min:2,stat1Max:4,stat1Scale:1,stat1Suffix:" %",stat2Name:"",stat2Id:0,stat2Min:0,stat2Max:0,stat2Scale:1,stat2Suffix:""},
+    {gid:32776,name:"Monolithe",rarity:"ANOMALIE COMMUNE",level:9,description:"Si aucun PM n'a été dépensé pendant le tour, gagne une réduction de dégâts jusqu'au début du prochain tour. Le bonus disparaît immédiatement après un déplacement volontaire.",category:"Anomalie",source:"Craqueleur Légendaire",icon:root+"Monolithe_64x64.png",stat1Name:"Réduction / protection",stat1Id:3127,stat1Min:5,stat1Max:10,stat1Scale:1,stat1Suffix:" %",stat2Name:"Puissance offensive",stat2Id:3128,stat2Min:10,stat2Max:20,stat2Scale:1,stat2Suffix:" %"}
+   ];
    selectedDef=catalog.length?catalog[0]:null;
   }
   private function bindComponents():void
@@ -99,7 +116,7 @@ package Ankama_Anomalies.ui
   }
   private function mergeCandidate(target:Array,seen:Object,item:Object,source:String):void
   {
-   if(!item||seen[item.objectUID]) return;
+   if(!item||!definition(uint(item.objectGID))||seen[item.objectUID]) return;
    seen[item.objectUID]=true; target.push(item);
    diagnostic(source+" : "+describeItem(item));
   }
@@ -127,7 +144,9 @@ package Ankama_Anomalies.ui
   }
   private function score(item:Object,d:Object):Number
   {
-   return (effect(item,CHANCE)-d.chanceMin)/(d.chanceMax-d.chanceMin)+(effect(item,POWER)-d.powerMin)/(d.powerMax-d.powerMin);
+   var result:Number=(effect(item,d.stat1Id)-d.stat1Min)/Math.max(1,d.stat1Max-d.stat1Min);
+   if(uint(d.stat2Id)>0) result+=(effect(item,d.stat2Id)-d.stat2Min)/Math.max(1,d.stat2Max-d.stat2Min);
+   return result;
   }
   private function effect(item:Object,id:uint):int
   {
@@ -138,6 +157,27 @@ package Ankama_Anomalies.ui
   private function definition(gid:uint):Object
   {
    var d:Object; for each(d in catalog) if(uint(d.gid)==gid) return d; return null;
+  }
+  private function rarityColor(rarity:String):String
+  {
+   var value:String=rarity?rarity.toUpperCase():"";
+   if(value.indexOf("LÉGENDAIRE")>=0||value.indexOf("LEGENDAIRE")>=0) return "#FF9D3D";
+   if(value.indexOf("MYTHIQUE")>=0) return "#FF4D5A";
+   if(value.indexOf("ÉPIQUE")>=0||value.indexOf("EPIQUE")>=0) return "#D65CFF";
+   if(value.indexOf("INHABITUELLE")>=0||value.indexOf("PEU COMMUNE")>=0) return "#62D26F";
+   if(value.indexOf("RARE")>=0) return "#4EA5FF";
+   if(value.indexOf("COMMUNE")>=0) return "#B8B8B8";
+   if(value.indexOf("UNIQUE")>=0) return "#45D6C8";
+   return "#E8C34A";
+  }
+  private function rarityMarkup(rarity:String):String
+  {
+   return "<font color='"+rarityColor(rarity)+"'><b>"+rarity+"</b></font>";
+  }
+  private function displayDescription(value:String):String
+  {
+   if(!value||value.length<=DESCRIPTION_MAX_LENGTH) return value;
+   return value.substr(0,DESCRIPTION_MAX_LENGTH-1).replace(/\s+\S*$/g,"")+"…";
   }
   private function renderAll():void { renderCollection(); renderDetails(); renderEquipped(); }
   private function renderCollection():void
@@ -150,28 +190,35 @@ package Ankama_Anomalies.ui
    for(i=0;i<PAGE_SIZE;++i)
    {
     ci=page*PAGE_SIZE+i; d=ci<catalog.length?catalog[ci]:null; item=d?best[d.gid]:null;
-    locked[i].visible=!item; unlocked[i].visible=Boolean(item); icons[i].visible=Boolean(item); buttons[i].disabled=!d;
-    if(item) icons[i].uri=uiApi.createUri(d.icon);
+    locked[i].visible=Boolean(d)&&!item; unlocked[i].visible=Boolean(item); icons[i].visible=Boolean(d); buttons[i].disabled=!d;
+    if(d) icons[i].uri=uiApi.createUri(d.icon);
    }
   }
   private function renderDetails():void
   {
    var d:Object=selectedDef,item:Object=selectedItem; if(!d) return;
-   tx_detail_icon.uri=uiApi.createUri(d.icon); lbl_detail_name.text=d.name; lbl_detail_rarity.text=d.rarity;
-   lbl_detail_level.text="Niveau "+d.level; lbl_detail_description.text=d.description;
+   tx_detail_icon.uri=uiApi.createUri(d.icon); lbl_detail_name.text=d.name; lbl_detail_rarity.text=rarityMarkup(d.rarity);
+   lbl_detail_level.text="Niveau "+d.level; lbl_detail_description.text=displayDescription(d.description);
    lbl_detail_category.text=d.category; lbl_detail_source.text=d.source; lbl_detail_date.text="—";
-   lbl_detail_chance_max.text="/ "+tenths(d.chanceMax)+" %"; lbl_detail_power_max.text="/ "+d.powerMax+" %";
-   lbl_detail_chance.text=item?tenths(effect(item,CHANCE))+" %":"—"; lbl_detail_power.text=item?effect(item,POWER)+" %":"—";
+   lbl_detail_stat1_name.text=d.stat1Name; lbl_detail_stat2_name.text=uint(d.stat2Id)>0?d.stat2Name:"";
+   lbl_detail_chance_max.text="/ "+formatValue(d.stat1Max,d.stat1Scale,d.stat1Suffix);
+   lbl_detail_power_max.text=uint(d.stat2Id)>0?"/ "+formatValue(d.stat2Max,d.stat2Scale,d.stat2Suffix):"";
+   lbl_detail_chance.text=item?formatValue(effect(item,d.stat1Id),d.stat1Scale,d.stat1Suffix):"—";
+   lbl_detail_power.text=uint(d.stat2Id)>0?(item?formatValue(effect(item,d.stat2Id),d.stat2Scale,d.stat2Suffix):"—"):"";
    var isActive:Boolean=Boolean(item)&&Boolean(activeItem)&&uint(item.objectUID)==uint(activeItem.objectUID);
    lbl_btn_equip.text=isActive?"DÉSÉQUIPER":"ÉQUIPER"; btn_equip.disabled=!item;
   }
   private function renderEquipped():void
   {
    var d:Object=activeItem?definition(activeItem.objectGID):null;
-   tx_equipped_empty.visible=!activeItem; tx_equipped_active.visible=Boolean(activeItem);
-   tx_equipped_icon.visible=Boolean(activeItem)&&Boolean(d); if(d) tx_equipped_icon.uri=uiApi.createUri(d.icon);
+   var equipped:Boolean=Boolean(activeItem)&&Boolean(d);
+   tx_equipped_empty.visible=!equipped; tx_equipped_active.visible=equipped;
+   tx_equipped_icon.visible=equipped; lbl_equipped_name.visible=equipped; lbl_equipped_level.visible=equipped;
+   lbl_equipped_name.text=equipped?d.name:""; lbl_equipped_level.text=equipped?"Niv. "+d.level:"";
+   if(equipped) tx_equipped_icon.uri=uiApi.createUri(d.icon);
   }
-  private function tenths(v:int):String { return (v/10).toFixed(1).replace(".",","); }
+  private function formatValue(v:int,scale:Number,suffix:String):String
+  { return (scale==10?(v/10).toFixed(1).replace(".",","):String(v))+suffix; }
   private function sendCommand(command:String):void
   {
    var action:Object=getDefinitionByName("com.ankamagames.dofus.logic.game.common.actions.chat.ChatTextOutputAction");
@@ -183,7 +230,7 @@ package Ankama_Anomalies.ui
    if(target==btn_close) { uiApi.unloadUi("anomaliesUi"); return; }
    if(target==btn_equip&&selectedItem)
    {
-    sendCommand(activeItem&&uint(activeItem.objectUID)==uint(selectedItem.objectUID)?"/anomaly off":"/anomaly "+selectedItem.objectUID); return;
+    sendCommand(activeItem&&uint(activeItem.objectUID)==uint(selectedItem.objectUID)?".anomaly off":".anomaly "+selectedItem.objectUID); return;
    }
    if(target==btn_collection_prev||target==btn_collection_next)
    {

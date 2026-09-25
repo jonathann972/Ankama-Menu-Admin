@@ -4,6 +4,7 @@ using Giny.Protocol.Enums;
 using Giny.World.Managers.Fights;
 using Giny.World.Managers.Fights.Fighters;
 using Giny.World.Managers.Fights.Results;
+using Giny.World.Managers.Items.Anomalies;
 using Giny.World.Managers.Monsters;
 using Giny.World.Records.Monsters;
 using System;
@@ -187,6 +188,12 @@ namespace Giny.World.Managers.Formulas
         }
         public double AdjustDropChance(IFightResult looter, MonsterDrop item, Monster dropper, double bonusRatio)
         {
+            // Anomaly rates are configured as final percentages. They bypass
+            // prospecting and the global drop multiplier without changing the
+            // vanilla formula used by every other drop.
+            if (AnomalyRollManager.Instance.HasDefinition(item.ItemGId))
+                return item.GetDropRate((int)dropper.Grade.GradeId);
+
             var additionalPP = (looter.Prospecting * bonusRatio);
             var looterPP = looter.Prospecting + additionalPP;
 

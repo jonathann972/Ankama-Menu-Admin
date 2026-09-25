@@ -1,5 +1,150 @@
 # Base de connaissance — Anomalies
 
+> **Document de référence actif.** Les anciens cahiers des charges et paquets de diagnostic décrivent des étapes historiques ; en cas de contradiction, ce document et les artefacts générés les plus récents font foi.
+
+## Démarrage rapide
+
+Avant toute intervention :
+
+1. analyser intégralement `project/tools/AnomalyCreator/generated` ou, dans l'espace de travail local, `AnomalyCreator/generated` ;
+2. réutiliser exclusivement les GID, EffectIds, plages de jets et mappings qui y sont consignés — ne jamais recréer ni deviner un identifiant ;
+3. préserver le double contexte d'`AnomaliesModuleBridge` et le cycle `GameStart` du bouton HUD ;
+4. employer uniquement `.anomaly <UID>` et `.anomaly off` — jamais `/anomaly` ;
+5. modifier une seule couche à la fois, valider le candidat décompilé, puis tester dans l'ordre : démarrage, bouton, panneau, catalogue, équipement, combat.
+
+### Sources de vérité
+
+| Sujet | Source prioritaire |
+|---|---|
+| GID, effets, jets et mappings d'une anomalie injectée | `AnomalyCreator/generated/anomaly-<GID>.txt` |
+| Définition utilisée pour une nouvelle injection | JSON correspondant dans `AnomalyCreator` |
+| Architecture, garde-fous et procédures | le présent document |
+| État réel du client et du serveur | candidat décompilé, hashes et test en jeu |
+| Besoin visuel historique | `CAHIER_DES_CHARGES_ANOMALIES_UI.txt`, à consulter comme référence et non comme état actuel |
+
+### Invariants à ne pas casser
+
+- Le verrou d'un slot non possédé reste **au-dessus** de l'icône ; l'icône ne doit pas masquer le verrou.
+- Le bouton Anomalies est installé après `GameStart`, sans doublon, et doit être réinstallé si le HUD natif est reconstruit après un changement de contexte ou un donjon.
+- Le nom et le niveau du slot équipé restent alimentés par `lbl_equipped_name` et `lbl_equipped_level`.
+- Les raretés utilisent une palette commune et distincte : Commune, Rare, Épique, Légendaire, Corrompue et autre/inconnue.
+- Aucun remplacement isolé d'une classe interne partageant le bloc ABC de `Modules` n'est déployé dans `DofusInvoker.swf`.
+
+### Navigation
+
+- [Architecture et cycle Berilia](#architecture-validée)
+- [Ajouter une Anomalie custom](#ajout-dune-anomalie-custom--procédure-canonique)
+- [Échecs connus](#architectures-ayant-échoué)
+- [Données et inventaire](#données-anomalies-confirmées)
+- [Synchronisation de l'équipement](#synchronisation-runtime-de-léquipement)
+- [Baselines et restauration](#baselines-importantes)
+- [Règle de travail](#règle-de-travail)
+- [Garde-fous du contrôleur](#garde-fous-du-contrôleur-natif--obligatoires)
+- [Rémanence](#rémanence--candidate-de-test-23-septembre-2026)
+- [Tooltips et raretés](#tooltips-anomalies--icônes-et-jets-validés-en-jeu)
+- [Toison](#toison--troisième-anomalie-candidate)
+
+## Ajout d'une Anomalie custom — procédure canonique
+
+Cette procédure couvre l'injection des données client et leur raccordement au serveur. `AnomalyCreator` ne crée jamais automatiquement la mécanique de combat : chaque anomalie exige une implémentation serveur spécifique et des tests dédiés.
+
+### 1. Vérifier les identifiants avant toute écriture
+
+1. Lire **tous** les fichiers déjà présents dans `AnomalyCreator/generated`.
+2. Vérifier le JSON prévu et les fichiers générés voisins.
+3. Lancer `audit` avant `apply`.
+4. Ne jamais déduire un GID, un EffectId ou un MonsterId à partir du nom d'une anomalie ou d'un donjon.
+
+Les EffectIds des anomalies custom doivent rester dans la plage réservée `3000..3999`, être distincts dans le JSON et ne pas réutiliser un mapping existant. Le fichier `generated/anomaly-<GID>.txt` produit par l'outil devient la source de vérité après injection.
+
+Pour retrouver un boss officiel sans le deviner :
+
+```powershell
+.\AnomalyCreator.exe bosses "C:\chemin\Dofus" .\LISTE_BOSS_MONSTER_ID.txt
+```
+
+### 2. Préparer le JSON et l'icône
+
+Champs obligatoires ou structurants :
+
+| Champ | Règle |
+|---|---|
+| `gid` | Identifiant libre confirmé par `audit`. |
+| `templateGid` | Objet Anomalie existant servant uniquement de modèle structurel. |
+| `name`, `description` | Textes finaux affichés par le client. Garder la description assez courte pour le panneau. |
+| `rarity` | Valeur de la palette commune : Commune, Rare, Épique, Légendaire, Corrompue ou autre explicitement assumée. |
+| `level` | Niveau d'affichage, supérieur ou égal à 1. |
+| `iconFile` | PNG réel de `64 × 64 px`, RGBA/transparence recommandée, placé à côté du JSON ou donné par chemin absolu. |
+| `bossMonsterId` | Boss unique. Ne pas le renseigner en même temps qu'une liste différente. |
+| `bossMonsterIds` | Liste de boss lorsque plusieurs monstres doivent porter le même drop ; cette liste est prioritaire sur `bossMonsterId`. |
+| `dropPercent` | Taux entre `0` exclu et `100` inclus, appliqué aux cinq grades. |
+| `effects` | Au moins un effet, avec `id`, `label`, `minimum`, `maximum`, `scale` et `suffix`. |
+
+`scale` décrit uniquement la présentation de la valeur. Exemple : une valeur stockée `190` avec `scale: 10` s'affiche `19,0 %`. Les bornes du JSON restent les bornes de stockage utilisées pour le jet serveur.
+
+L'icône doit rester nette à sa taille réelle : sujet central couvrant environ `85–90 %` du carré, silhouette simple, contraste fort, peu de micro-détails, aucun cadre ni texte intégré. Vérifier visuellement le PNG **après** réduction en 64 × 64, pas seulement sa source haute définition.
+
+### 3. Auditer, appliquer et vérifier
+
+Fermer complètement Dofus, ouvrir PowerShell dans le dossier qui contient `AnomalyCreator.exe`, puis exécuter :
+
+```powershell
+.\AnomalyCreator.exe audit .\<GID>_<Nom>.json "C:\chemin\Dofus"
+.\AnomalyCreator.exe apply .\<GID>_<Nom>.json "C:\chemin\Dofus"
+.\AnomalyCreator.exe verify .\<GID>_<Nom>.json "C:\chemin\Dofus"
+```
+
+`audit` doit annoncer le GID, l'icône et le drop comme libres, ainsi que les effets comme valides. `apply` refuse volontairement de réécrire un GID, une icône ou un drop déjà présent. Il crée d'abord une sauvegarde horodatée sous `Dofus/AnomalyCreatorBackups/<GID>/`, puis modifie uniquement :
+
+- `Items.d2o` pour l'objet de type `290` ;
+- `i18n_fr.d2i` pour le nom et la description/rareté ;
+- `bitmap0_1.d2p` pour `<GID>.png` ;
+- `Monsters.d2o` pour les drops déclarés.
+
+En cas d'échec après application :
+
+```powershell
+.\AnomalyCreator.exe rollback .\<GID>_<Nom>.json "C:\chemin\Dofus"
+```
+
+Ne jamais relancer `apply` pour déplacer un drop déjà injecté. Corriger le ou les boss dans le JSON, fermer le client, puis utiliser :
+
+```powershell
+.\AnomalyCreator.exe repair-drop .\<GID>_<Nom>.json "C:\chemin\Dofus"
+.\AnomalyCreator.exe verify .\<GID>_<Nom>.json "C:\chemin\Dofus"
+```
+
+### 4. Cas multi-boss et restriction à un donjon
+
+Pour plusieurs boss légitimes dans le même combat, utiliser `bossMonsterIds`. Exemple conceptuel : les quatre Tynrils peuvent recevoir le même drop via une liste de quatre MonsterIds.
+
+Une restriction « uniquement dans ce donjon » ne peut pas être garantie par le drop D2O seul. Le champ `dropMapIds` existe dans le modèle JSON mais n'est actuellement pas consommé par `AnomalyCreator` : il ne doit donc jamais être considéré comme une protection active. La condition de carte/donjon doit être appliquée dans `AnomalyDropManager` côté serveur, à partir d'identifiants de carte vérifiés. C'est notamment obligatoire lorsqu'un même MonsterId peut apparaître dans plusieurs donjons mais ne doit donner l'anomalie que dans l'un d'eux.
+
+### 5. Raccordement serveur et UI
+
+Après `apply`, ouvrir `generated/anomaly-<GID>.txt` et reporter exactement ses constantes et mappings dans les composants concernés :
+
+1. déclaration/catalogue de l'anomalie dans `AnomalyRollManager` ou le registre serveur équivalent ;
+2. création des jets d'instance selon les bornes `minimum..maximum` ;
+3. mapping des effets dans le tooltip et le panneau Berilia ;
+4. ajout de l'icône au module `Ankama_Anomalies` si le catalogue embarqué l'exige ;
+5. implémentation séparée de la mécanique de combat ;
+6. règle de drop serveur, y compris les éventuelles restrictions de carte ;
+7. compilation, déploiement et validation en jeu.
+
+Le client D2O décrit l'objet et son drop visible ; le serveur reste autoritaire pour le jet réel, l'instance, les effets, la mécanique et les conditions de donjon. Ne jamais simuler ces règles uniquement dans l'UI.
+
+### 6. Validation finale obligatoire
+
+- `verify` réussit après l'injection.
+- `generated/anomaly-<GID>.txt` existe et correspond au JSON.
+- Le client démarre au-delà de 48 % et le bouton Anomalies reste présent.
+- L'objet possède le bon nom, la bonne rareté, le bon niveau et une icône nette.
+- Le verrou des exemplaires non possédés reste au-dessus de l'icône.
+- Les valeurs du tooltip et du panneau proviennent des effets réels de l'instance.
+- Le drop ne se produit que sur les boss et, si nécessaire, les cartes explicitement autorisés.
+- La mécanique est testée avec succès, échec, limites de jet, déséquipement et reconnexion.
+
 ## Architecture validée
 
 La chaîne validée en jeu est :
@@ -163,6 +308,87 @@ démarrage → module → bouton → ouverture UI → contrôleur → inventaire
 
 Avant toute modification importante, relire ce document. Une architecture marquée comme ayant échoué ne doit pas être réintroduite sans justification explicite et nouveau protocole de restauration.
 
+## Garde-fous du contrôleur natif — obligatoires
+
+Ces invariants ont été reconfirmés après les régressions du 24 septembre 2026. Toute modification de `AnomaliesModuleBridge`, `AnomaliesModuleRuntime`, `Modules` ou `Ankama_Anomalies.swf` doit les préserver ensemble.
+
+### Double contexte de `AnomaliesModuleBridge`
+
+`AnomaliesModuleBridge.main()` ne doit jamais être remplacé par un contrôleur UI pur. Il doit conserver ses deux branches :
+
+1. si `lbl_collection` est injecté, exécuter le contrôleur Berilia du panneau ;
+2. sinon, charger `Ankama_Anomalies/Ankama_Anomalies.swf` dans `ApplicationDomain.currentDomain`, injecter les API dans `Ankama_Anomalies.Ankama_Anomalies`, puis appeler son `main()`.
+
+Supprimer la seconde branche empêche l'amorçage du module externe et peut faire disparaître l'interface ou son bouton après redémarrage.
+
+### Installation du bouton HUD
+
+Le chemin validé reste `AnomaliesModuleRuntime.main()` → hook `HookList.GameStart` → `onGameStart()` → `installNativeButton()`. `installNativeButton()` doit impérativement conserver le contrôle préalable de l'entrée `id == 32760`.
+
+Ne pas remplacer isolément la classe interne `AnomaliesModuleRuntime` dans `DofusInvoker.swf`. Cette classe partage le même bloc ABC que `Modules` et d'autres traits internes : un remplacement individuel avec FFDec a produit, le 24 septembre 2026, un client qui restait lancé en arrière-plan mais dont la fenêtre de jeu ne s'ouvrait plus correctement. Le binaire a dû être restauré depuis `DofusInvoker.before-button-repair-20260924.bak.swf`.
+
+Si le bouton manque, vérifier d'abord le double contexte de `AnomaliesModuleBridge`, le chargement de `Ankama_Anomalies.swf`, les journaux `[ANOMALIES-UI]` et la présence du registre `_scripts["Ankama_Anomalies"]`. Toute modification de `AnomaliesModuleRuntime` doit recompiler/remplacer l'unité ABC complète depuis une baseline validée, puis être testée séparément au démarrage.
+
+Une modification est invalide si, après redémarrage complet, le bouton Anomalies n'est pas présent dans `bannerMenu.gd_btnUis`.
+
+#### Persistance après combat et reconstruction du HUD — candidate à tester
+
+Symptôme observé : le bouton peut disparaître après l'entrée dans un combat, un donjon ou plusieurs minutes de jeu lorsque `bannerMenu` est reconstruit. L'entrée ajoutée à l'ancien `gd_btnUis.dataProvider` n'est alors pas automatiquement transférée au nouveau composant.
+
+La correction candidate du 24 septembre 2026 conserve le chemin `GameStart` et ajoute deux mécanismes idempotents :
+
+1. écouter `BeriliaHookList.UiLoaded` et rappeler `installNativeButton()` environ `250 ms` après le chargement de `bannerMenu` ;
+2. contrôler toutes les `5 s` que l'entrée `id == 32760` existe encore dans le `dataProvider` courant.
+
+`installNativeButton()` doit toujours rechercher `id == 32760` avant l'ajout. Le contrôle périodique répare donc une disparition sans créer de doublon. S'il n'existe pas encore de `bannerMenu` ou de `gd_btnUis.dataProvider`, il retente après `500 ms`.
+
+Source candidate : `Ankama_Anomalies/native-patch-source/com/ankamagames/dofus/Modules.as`. Un SWF candidat a été recompilé et décompilé pour vérifier la présence de `UiLoaded`, `watchNativeButton()` et du garde-fou `id == 32760`, mais **le comportement après combat n'est pas encore validé en jeu**. Il ne doit pas être promu comme nouvelle baseline avant les tests suivants :
+
+- connexion et présence d'un seul bouton ;
+- entrée puis sortie d'un combat ;
+- entrée puis sortie d'un donjon ;
+- attente supérieure à cinq minutes ;
+- reconstruction ou rechargement de `bannerMenu` ;
+- ouverture du panneau après chaque étape ;
+- absence de doublon dans `gd_btnUis`.
+
+### Syntaxe des commandes d'équipement
+
+La syntaxe serveur validée est exclusivement :
+
+```text
+.anomaly <UID>
+.anomaly off
+```
+
+Ne jamais remplacer le point initial par `/`. Une recherche automatique de la chaîne `/anomaly` doit retourner zéro occurrence dans les contrôleurs avant compilation et déploiement.
+
+### Texte du slot équipé
+
+Le contrôleur doit déclarer et alimenter les deux composants publics suivants :
+
+```text
+lbl_equipped_name
+lbl_equipped_level
+```
+
+Dans `renderEquipped()`, leur visibilité doit suivre l'état équipé, leur texte doit être vidé quand le slot est vide, et les valeurs attendues sont `d.name` et `"Niv. " + d.level`. Une refonte générique du catalogue ne doit jamais supprimer ce rendu.
+
+### Validation obligatoire du SWF recompilé
+
+Après remplacement ActionScript avec FFDec, décompiler le **candidat final** et vérifier avant copie vers `DofusInvoker.swf` :
+
+```text
+Modules : _scripts["Ankama_Anomalies"] = AnomaliesModuleRuntime
+AnomaliesModuleRuntime : hook GameStart et installNativeButton présents dans l'unité ABC complète
+AnomaliesModuleBridge : branche lbl_collection + chargeur du SWF externe
+AnomaliesModuleBridge : commandes .anomaly
+AnomaliesModuleBridge : lbl_equipped_name / lbl_equipped_level
+AnomaliesModuleBridge : dernière entrée attendue du catalogue
+```
+
+Créer une sauvegarde du binaire déployé avant chaque remplacement. Après déploiement, effectuer un redémarrage complet du client et valider dans cet ordre : bouton HUD, ouverture/fermeture du panneau, pagination du catalogue, texte du slot équipé, équipement, déséquipement et actualisation immédiate.
+
 ## Rémanence — candidate de test (23 septembre 2026)
 
 Rémanence est la seconde définition du catalogue multi-anomalies. Cette version part exclusivement de la baseline Écho complète validée ; elle ne devient une nouvelle baseline qu'après validation en jeu.
@@ -277,13 +503,15 @@ Les valeurs affichées ne doivent jamais être inscrites en dur dans le SWF : el
 
 Le rendu validé utilise :
 
-- `Rareté :` en doré et `Épique` en violet ;
+- `Rareté :` en doré, avec une couleur propre à la valeur : Commune `#B8B8B8`, Rare `#4DA6FF`, Épique `#C653FF`, Légendaire `#FFB52E`, Corrompue `#D94A67`, autre/inconnue `#E8C34A` ;
 - la description en bleu ciel ;
 - `Jets de l'Anomalie` en doré ;
 - les valeurs réelles en vert ;
 - les plages min/max en gris.
 
 La section des jets est ajoutée après le contenu descriptif final. Elle ne doit pas dépendre d'une substitution fragile autour du texte brut de rareté. Les effets présents sont rendus depuis le mapping ; le moteur n'est pas dupliqué avec une succession de branches propres à chaque Anomalie. Pour ajouter une troisième Anomalie, ajouter uniquement une nouvelle définition GID/effets.
+
+La coloration de rareté ne doit pas dépendre de la présence du GID dans le mapping des jets. Si aucune définition GID n'existe encore, `ItemTooltipUi` doit lire la valeur après `Rareté :` dans le texte et appliquer la palette commune. Cette règle garantit la bonne couleur des nouvelles anomalies dès leur injection par `AnomalyCreator`.
 
 ### Instances et diagnostic
 
@@ -321,3 +549,31 @@ items vanilla
 ```
 
 Séparer strictement les responsabilités : les D2O définissent l'objet et son icône, le serveur fournit les effets d'instance, et `ItemTooltipUi` effectue uniquement leur présentation.
+
+## Toison — troisième Anomalie candidate
+
+Intégration technique du 23 septembre 2026, en attente de validation gameplay complète en jeu.
+
+| Propriété | Valeur |
+|---|---|
+| GID / iconId | `32762` — disponibilité auditée avant création |
+| Type / niveau | `290` / `6` |
+| Rareté | Commune |
+| Catégorie | Mêlée |
+| Boss officiel | Bouftou Royal, MonsterId `147` |
+| Donjon | Cour du Bouftou Royal |
+| Chance | effet `3105`, `150..250`, soit `15,0..25,0 %` |
+| Restauration | effet `3106`, `10..20 %` des PV réellement perdus |
+
+Le gameplay écoute `DamageReceived` sur le `CharacterFighter`. La condition de mêlée réutilise `damage.Source.IsMeleeWith(target)` et le calcul utilise `DamageResult.LifeLoss`, donc la perte effective après résistances et boucliers. La première attaque de mêlée avec perte de vie consomme immédiatement la tentative, avant le jet : un échec interdit toute nouvelle tentative jusqu'au prochain tour du personnage. Le soin fixe est plafonné aux PV récupérables et n'est pas appliqué si le coup est fatal.
+
+Le drop est ajouté uniquement au Bouftou Royal avec un taux final de `1 %`. `FightFormulas.AdjustDropChance()` reconnaît les GID déclarés par `AnomalyRollManager` et retourne leur taux configuré sans multiplicateur de Prospection, bonus de challenge ou taux global. La formule vanilla reste inchangée pour tous les autres objets.
+
+Le tooltip et le panneau utilisent les effets réels de l'instance :
+
+```text
+3105 → Chance de déclenchement
+3106 → PV perdus restaurés
+```
+
+L'intégration client ciblée ajoute uniquement l'objet `32762`, deux textes D2I et `32762.png` dans `bitmap0_1.d2p`. Pour refléter le butin dans le Bestiaire, seule l'entrée `MonsterId=147` de `Monsters.d2o` est redirigée vers une nouvelle version sérialisée contenant le drop `32762` à `1 %` (`dropId=14113`). `ItemTypes.d2o` et les index de recherche de l'Encyclopédie ne sont pas modifiés.

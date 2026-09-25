@@ -2120,6 +2120,7 @@ namespace Giny.World.Managers.Fights.Fighters
 
             TriggerBuffs(damage);
 
+            AdjustIncomingDamage(damage);
             delta = damage.Computed.Value;
 
             if (delta <= 0 || (!Alive))
@@ -2278,6 +2279,10 @@ namespace Giny.World.Managers.Fights.Fighters
 
 
             return result;
+        }
+
+        protected virtual void AdjustIncomingDamage(Damage damage)
+        {
         }
 
         public void OnDamageReflected(Fighter attacker)

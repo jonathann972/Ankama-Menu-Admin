@@ -28,11 +28,17 @@ namespace Giny.World.Managers.Items.Anomalies
     {
         public const int EchoItemId = 32760;
         public const int RemanenceItemId = 32761;
+        public const int ToisonItemId = 32762;
+        public const int MonolitheItemId = 32776;
         public const short RepetitionChanceEffectId = 3100;
         public const short RepeatedSpellPowerEffectId = 3101;
         public const short ActiveAnomalyEffectId = 3102;
         public const short RemanenceChanceEffectId = 3103;
         public const short RemanenceStoredApEffectId = 3104;
+        public const short ToisonChanceEffectId = 3105;
+        public const short ToisonHealPercentEffectId = 3106;
+        public const short MonolitheReductionEffectId = 3127;
+        public const short MonolitheOffensivePowerEffectId = 3128;
 
         private readonly Random m_random = new Random();
         private readonly object m_randomLock = new object();
@@ -50,6 +56,17 @@ namespace Giny.World.Managers.Items.Anomalies
                 // Tenths preserve one decimal between 15.0% and 25.0%.
                 new AnomalyRollDefinition(RemanenceChanceEffectId, 150, 250),
                 new AnomalyRollDefinition(RemanenceStoredApEffectId, 1, 2),
+            },
+            [ToisonItemId] = new[]
+            {
+                // Tenths preserve one decimal between 15.0% and 25.0%.
+                new AnomalyRollDefinition(ToisonChanceEffectId, 150, 250),
+                new AnomalyRollDefinition(ToisonHealPercentEffectId, 10, 20),
+            },
+            [MonolitheItemId] = new[]
+            {
+                new AnomalyRollDefinition(MonolitheReductionEffectId, 5, 10),
+                new AnomalyRollDefinition(MonolitheOffensivePowerEffectId, 10, 20),
             }
         };
 
@@ -135,8 +152,20 @@ namespace Giny.World.Managers.Items.Anomalies
 
         public static int EncodeFightResultRolls(CharacterItemRecord item)
         {
-            var chanceEffect = item?.GId == RemanenceItemId ? RemanenceChanceEffectId : RepetitionChanceEffectId;
-            var valueEffect = item?.GId == RemanenceItemId ? RemanenceStoredApEffectId : RepeatedSpellPowerEffectId;
+            var chanceEffect = item?.GId switch
+            {
+                RemanenceItemId => RemanenceChanceEffectId,
+                ToisonItemId => ToisonChanceEffectId,
+                MonolitheItemId => MonolitheReductionEffectId,
+                _ => RepetitionChanceEffectId,
+            };
+            var valueEffect = item?.GId switch
+            {
+                RemanenceItemId => RemanenceStoredApEffectId,
+                ToisonItemId => ToisonHealPercentEffectId,
+                MonolitheItemId => MonolitheOffensivePowerEffectId,
+                _ => RepeatedSpellPowerEffectId,
+            };
             var chance = GetRoll(item, chanceEffect) & 0x1FF;
             var value = GetRoll(item, valueEffect) & 0x7F;
             return unchecked((int)0x40000000) | (chance << 7) | value;

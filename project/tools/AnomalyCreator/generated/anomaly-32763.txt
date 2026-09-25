@@ -1,0 +1,9 @@
+// GID 32763 — Nom de l'Anomalie
+public const int NomdelAnomalieItemId = 32763;
+
+// Effets serveur / tooltip
+3107 => Chance de déclenchement | roll=150..250 | scale=10 | suffix=%
+3108 => Puissance | roll=10..20 | scale=1 | suffix=%
+
+Tooltip catalog: gid=32763, rarity=Commune
+ATTENTION : implémenter et tester séparément la mécanique gameplay spécifique.

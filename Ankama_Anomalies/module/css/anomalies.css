@@ -49,7 +49,7 @@ lore {
 sectiontitle {
     font-family: Roboto;
     font-size: 16px;
-    color: #F2F2F0;
+    color: #DDD8CE;
     font-weight: bold;
     text-align: center;
     shadow-distance: 2;
@@ -77,7 +77,7 @@ equiplabel {
 equippedname {
     font-family: Roboto;
     font-size: 14px;
-    color: #F2F2F0;
+    color: #DDD8CE;
     font-weight: bold;
     text-align: center;
     shadow-distance: 2;
@@ -130,7 +130,7 @@ collectiontitle {
     shadow-strength: 1;
 }
 
-detailname { font-family: Roboto; font-size: 20px; color: #F2F2F0; font-weight: bold; text-align: left; shadow-distance: 2; shadow-blurX: 2; shadow-blurY: 2; shadow-angle: 90; shadow-color: #000000; }
+detailname { font-family: Roboto; font-size: 20px; color: #DDD8CE; font-weight: bold; text-align: left; shadow-distance: 2; shadow-blurX: 2; shadow-blurY: 2; shadow-angle: 90; shadow-color: #000000; }
 detailrarity { font-family: Roboto; font-size: 13px; color: #CF55FF; font-weight: bold; text-align: left; }
 detailbody { font-family: Roboto; font-size: 13px; color: #DDD8CE; text-align: left; }
 detailsection { font-family: Roboto; font-size: 14px; color: #F3D77A; font-weight: bold; text-align: left; shadow-distance: 2; shadow-blurX: 2; shadow-blurY: 2; shadow-angle: 90; shadow-color: #171008; shadow-strength: 2; }
